@@ -28,8 +28,8 @@ function App() {
     setScreen("scan");
   }
   return (
-    <div className="min-h-screen bg-stone-50 text-stone-900">
-      <main className="max-w-md mx-auto p-4">
+    <div className="min-h-screen bg-paper text-ink">
+      <main className="mx-auto max-w-md px-5 pb-12">
         {screen === "scan" && <ScanPage onScanned={handleScanned} />}
         {screen === "review" && (
           <ReviewPage

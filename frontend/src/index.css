@@ -1,7 +1,20 @@
 @import "tailwindcss";
 
 @theme {
+  /* concert programme palette */
+  --color-paper: #f3ecdf;
+  --color-paper-deep: #e8dfcd;
+  --color-ink: #1c1a17;
+  --color-ink-soft: #5d574c;
+  --color-accent: #d1401f;
+  --color-ochre: #b8862f;
+
+  --font-display: "Bodoni Moda", "Didot", Georgia, serif;
+  --font-sans: "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
+
   --animate-eq: eq 1s ease-in-out infinite;
+  --animate-step-in: step-in 0.35s ease-out;
+  --animate-rise: rise 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) both;
 
   @keyframes eq {
     0%,
@@ -11,5 +24,70 @@
     50% {
       transform: scaleY(1);
     }
+  }
+
+  @keyframes step-in {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+/* five thin lines with a gap, like a music stave. change --stave-ink to recolour */
+@utility stave {
+  --stave-ink: rgb(28 26 23 / 0.09);
+  background-image: repeating-linear-gradient(
+    to bottom,
+    var(--stave-ink) 0 1px,
+    transparent 1px 8px,
+    var(--stave-ink) 8px 9px,
+    transparent 9px 16px,
+    var(--stave-ink) 16px 17px,
+    transparent 17px 24px,
+    var(--stave-ink) 24px 25px,
+    transparent 25px 32px,
+    var(--stave-ink) 32px 33px,
+    transparent 33px 88px
+  );
+}
+
+@layer base {
+  body {
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* faint paper grain over everything */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    pointer-events: none;
+    opacity: 0.35;
+    mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.11 0 0 0 0 0.1 0 0 0 0 0.09 0 0 0 0.45 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  ::selection {
+    background: var(--color-accent);
+    color: var(--color-paper);
   }
 }

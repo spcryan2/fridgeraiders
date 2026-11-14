@@ -1,3 +1,12 @@
+import SectionHeading from "./SectionHeading.jsx";
+
+const NUMERALS = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII", "XIII", "XIV", "XV"];
+
+// step 3 -> "III", falls back to the plain number past 15
+function toNumeral(n) {
+  return NUMERALS[n - 1] || String(n);
+}
+
 function formatExtra(item) {
   if (typeof item === "string") return item;
   return item.amount ? `${item.name} (${item.amount})` : item.name;
@@ -5,71 +14,90 @@ function formatExtra(item) {
 
 function RecipeCard({ recipe }) {
   return (
-    <article className="space-y-6 rounded-3xl bg-white p-6 shadow-sm">
-      <header className="space-y-2">
-        <h2 className="text-2xl font-bold leading-tight">{recipe.title}</h2>
-        <p className="text-stone-600">{recipe.summary}</p>
-        <div className="flex flex-wrap gap-2 text-sm">
-          <span className="rounded-full bg-stone-100 px-3 py-1">
-            ⏱ {recipe.time_minutes} min
-          </span>
-          <span className="rounded-full bg-stone-100 px-3 py-1">
-            🍽 Serves {recipe.servings}
-          </span>
-          <span className="rounded-full bg-stone-100 px-3 py-1 capitalize">
-            {recipe.difficulty}
-          </span>
-        </div>
+    <article className="space-y-8 rounded-3xl border border-ink/10 bg-white/55 p-6 shadow-sm shadow-ink/5 motion-safe:animate-rise">
+      <header className="space-y-3 text-center">
+        <p className="text-xs font-semibold tracking-[0.3em] text-accent uppercase">
+          Tonight's composition
+        </p>
+        <h2 className="font-display text-4xl leading-[1.05] font-semibold italic">
+          {recipe.title}
+        </h2>
+        <p className="text-ink-soft">{recipe.summary}</p>
+        <p className="flex flex-wrap justify-center gap-x-3 text-xs font-semibold tracking-[0.15em] text-ink uppercase">
+          <span>{recipe.time_minutes} min</span>
+          <span className="text-accent">·</span>
+          <span>Serves {recipe.servings}</span>
+          {recipe.difficulty && (
+            <>
+              <span className="text-accent">·</span>
+              <span>{recipe.difficulty}</span>
+            </>
+          )}
+        </p>
       </header>
 
       {recipe.pairing && (
-        <section className="rounded-2xl border border-violet-200 bg-violet-50 p-4">
-          <h3 className="text-sm font-semibold uppercase tracking-wide text-violet-700">
-            ♪ The composition
+        <section className="border-l-2 border-accent py-1 pl-4">
+          <h3 className="text-xs font-semibold tracking-[0.2em] text-accent uppercase">
+            ♪ Programme note
           </h3>
-          <p className="mt-1 font-medium">{recipe.pairing.items.join(" + ")}</p>
-          <p className="mt-2 text-sm text-stone-700">{recipe.pairing.reason}</p>
+          <p className="mt-2 font-display text-xl font-semibold italic">
+            {recipe.pairing.items.map((item, i) => (
+              <span key={item}>
+                {i > 0 && <span className="font-sans font-normal text-accent not-italic"> + </span>}
+                {item}
+              </span>
+            ))}
+          </p>
+          <p className="mt-2 text-sm leading-relaxed text-ink-soft">
+            {recipe.pairing.reason}
+          </p>
         </section>
       )}
 
-      <section>
-        <h3 className="mb-2 font-semibold">From your fridge</h3>
-        <ul className="space-y-1">
+      <section className="space-y-3">
+        <SectionHeading numeral="I">The ensemble</SectionHeading>
+        <ul className="space-y-1.5">
           {recipe.ingredients_used.map((item, i) => (
-            <li
-              key={i}
-              className="flex justify-between border-b border-stone-100 py-1"
-            >
+            <li key={i} className="flex items-baseline">
               <span>{item.name}</span>
-              <span className="text-stone-500">{item.amount}</span>
+              {/* dotted leader, like a programme's running order */}
+              <span className="mx-2 flex-1 border-b border-dotted border-ink/30" />
+              <span className="text-ink-soft">{item.amount}</span>
             </li>
           ))}
         </ul>
       </section>
 
       {recipe.extra_needed.length > 0 && (
-        <section>
-          <h3 className="mb-2 font-semibold">You'll also need</h3>
-          <ul className="list-disc pl-5 text-stone-700">
+        <section className="space-y-3">
+          <SectionHeading numeral="II">Guest players</SectionHeading>
+          <ul className="space-y-1.5 text-ink-soft">
             {recipe.extra_needed.map((item, i) => (
-              <li key={i}>{formatExtra(item)}</li>
+              <li key={i}>+ {formatExtra(item)}</li>
             ))}
           </ul>
         </section>
       )}
 
-      <section>
-        <h3 className="mb-2 font-semibold">Method</h3>
-        <ol className="space-y-3">
+      <section className="space-y-4">
+        <SectionHeading
+          numeral={recipe.extra_needed.length > 0 ? "III" : "II"}
+        >
+          Movements
+        </SectionHeading>
+        <ol className="space-y-4">
           {recipe.steps.map((step) => (
-            <li key={step.number} className="flex gap-3">
-              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-stone-900 text-sm font-bold text-white">
-                {step.number}
+            <li key={step.number} className="flex gap-4">
+              <span className="w-9 shrink-0 pt-0.5 text-right font-display text-lg font-semibold text-accent italic">
+                {toNumeral(step.number)}
               </span>
               <div>
-                <p>{step.instruction}</p>
-                {step.minutes && (
-                  <p className="text-xs text-stone-500">{step.minutes} min</p>
+                <p className="leading-relaxed">{step.instruction}</p>
+                {step.minutes > 0 && (
+                  <p className="mt-0.5 text-xs font-semibold tracking-[0.15em] text-ink-soft uppercase">
+                    {step.minutes} min
+                  </p>
                 )}
               </div>
             </li>
