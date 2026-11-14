@@ -11,7 +11,6 @@ function ReviewPage({ ingredients, onChange, onComposed, onBack }) {
     setLoading(true);
     setError(null);
     try {
-      // only send the fields the API contract asks for
       const payload = {
         ingredients: ingredients
           .filter((item) => item.name.trim())
