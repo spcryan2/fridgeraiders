@@ -8,7 +8,7 @@ recipes_bp = Blueprint("recipes", __name__)
 def get_recipes():
     return jsonify(recipes=list_recipes())
 
-@recipes_bp.post("/api/recipes"):
+@recipes_bp.post("/api/recipes")
 def create_recipe():
     recipe = request.get_json(silent=True)
     if not isinstance(recipe, dict) or not str(recipe.get("title","")).strip():
