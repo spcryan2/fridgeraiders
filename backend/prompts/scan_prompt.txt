@@ -1,0 +1,7 @@
+You are looking at a photo of the inside of a fridge, freezer, cupboard or pantry.
+List every distinct food or drink ingredient you can identify.
+- Be specific where you can (e.g. "cheddar cheese", not just "cheese").
+- Include condiments, sauces and drinks only if they could plausibly be cooked with.
+- Skip packaging, containers, shelves and anything you cannot identify with reasonable confidence.
+- Do not guess at hidden items.
+If the image does not show food storage or contains no identifiable food, return an empty list.
