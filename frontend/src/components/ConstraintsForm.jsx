@@ -15,10 +15,10 @@ function Chip({ selected, onClick, children }) {
       type="button"
       onClick={onClick}
       aria-pressed={selected}
-      className={`rounded-full border px-3.5 py-1.5 text-sm capitalize transition ${
+      className={`rounded-full px-3.5 py-1.5 text-sm font-medium capitalize transition active:scale-95 ${
         selected
-          ? "border-ink bg-ink text-paper"
-          : "border-ink/20 bg-white/50 text-ink hover:border-ink/40"
+          ? "bg-forest text-white"
+          : "bg-cream text-forest ring-1 ring-forest/12 hover:ring-forest/30"
       }`}
     >
       {children}
@@ -29,7 +29,7 @@ function Chip({ selected, onClick, children }) {
 function Label({ title, hint }) {
   return (
     <h4 className="mb-2 text-sm font-semibold">
-      {title} <span className="font-normal text-ink-soft">· {hint}</span>
+      {title} <span className="font-normal text-forest/50">· {hint}</span>
     </h4>
   );
 }
@@ -43,28 +43,26 @@ function ConstraintsForm({ value, onChange }) {
   }
 
   return (
-    <section>
+    <section className="rounded-3xl bg-white ring-1 ring-forest/10">
       <button
         type="button"
         onClick={() => setOpen(!open)}
         aria-expanded={open}
-        className="flex w-full items-baseline gap-3 border-b border-ink/15 pb-2 text-left"
+        className="flex w-full items-center gap-3 px-5 py-4 text-left"
       >
-        <span className="font-display text-lg text-accent italic">II.</span>
-        <span className="font-display text-2xl font-semibold">
-          Tempo &amp; instruments
-        </span>
+        <span className="wordmark text-xl">House rules</span>
+        <span className="text-sm text-forest/50">time, diet, kit</span>
         <span
-          className={`ml-auto text-ink-soft transition-transform ${open ? "rotate-180" : ""}`}
+          className={`ml-auto grid h-8 w-8 place-items-center rounded-full bg-cream transition-transform ${open ? "rotate-180" : ""}`}
         >
           ▾
         </span>
       </button>
 
       {open && (
-        <div className="space-y-5 pt-4 motion-safe:animate-step-in">
+        <div className="space-y-5 px-5 pb-5 motion-safe:animate-step-in">
           <div>
-            <Label title="Tempo" hint="time limit" />
+            <Label title="Time limit" hint="tops" />
             <div className="flex flex-wrap gap-2">
               <Chip
                 selected={value.max_minutes === null}
@@ -92,12 +90,12 @@ function ConstraintsForm({ value, onChange }) {
                 onClick={() =>
                   update("servings", Math.max(1, value.servings - 1))
                 }
-                className="h-10 w-10 rounded-full border border-ink/20 bg-white/50 text-lg active:scale-95"
+                className="h-10 w-10 rounded-full bg-cream text-lg ring-1 ring-forest/12 active:scale-95"
                 aria-label="Fewer servings"
               >
                 −
               </button>
-              <span className="w-8 text-center font-display text-3xl font-semibold">
+              <span className="wordmark w-8 text-center text-3xl">
                 {value.servings}
               </span>
               <button
@@ -105,7 +103,7 @@ function ConstraintsForm({ value, onChange }) {
                 onClick={() =>
                   update("servings", Math.min(8, value.servings + 1))
                 }
-                className="h-10 w-10 rounded-full border border-ink/20 bg-white/50 text-lg active:scale-95"
+                className="h-10 w-10 rounded-full bg-cream text-lg ring-1 ring-forest/12 active:scale-95"
                 aria-label="More servings"
               >
                 +
@@ -114,7 +112,7 @@ function ConstraintsForm({ value, onChange }) {
           </div>
 
           <div>
-            <Label title="Diet" hint="never broken" />
+            <Label title="Diet" hint="we never break it" />
             <div className="flex flex-wrap gap-2">
               {DIET_OPTIONS.map((diet) => (
                 <Chip
@@ -129,7 +127,7 @@ function ConstraintsForm({ value, onChange }) {
           </div>
 
           <div>
-            <Label title="Instruments" hint="equipment you have" />
+            <Label title="Kit" hint="what you have" />
             <div className="flex flex-wrap gap-2">
               {EQUIPMENT_OPTIONS.map((item) => (
                 <Chip

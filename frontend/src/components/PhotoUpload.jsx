@@ -22,17 +22,15 @@ function PhotoUpload({ photos, onChange }) {
 
   return (
     <div className="space-y-5">
-      <label className="stave group block w-full cursor-pointer rounded-3xl border border-ink/15 bg-white/40 px-6 py-10 text-center transition hover:border-ink/40">
-        <span className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-ink text-3xl font-light text-paper transition group-hover:scale-105 group-active:scale-95">
+      <label className="group block w-full cursor-pointer rounded-3xl border-2 border-dashed border-lime-bright/50 bg-forest-soft px-6 py-9 text-center transition hover:border-lime-bright">
+        <span className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-lime text-4xl font-bold text-forest shadow-[0_4px_0_var(--color-leaf)] transition group-hover:scale-105 group-active:translate-y-1 group-active:shadow-none">
           +
         </span>
-        <span className="mt-4 inline-block rounded-full bg-paper px-3 text-lg font-semibold">
-          Add photos
+        <span className="wordmark mt-4 block text-2xl text-white">
+          Show us the fridge
         </span>
-        <span className="mt-1 block">
-          <span className="rounded-full bg-paper px-3 text-sm text-ink-soft">
-            Fridge, cupboard, anything
-          </span>
+        <span className="mt-1 block text-sm text-white/60">
+          Fridge, cupboard, anything. We're not judging.
         </span>
         <input
           type="file"
@@ -48,7 +46,7 @@ function PhotoUpload({ photos, onChange }) {
           {photos.map((file, i) => (
             <div
               key={i}
-              className={`relative aspect-square rounded-xl bg-white p-1.5 shadow-md shadow-ink/10 ${
+              className={`relative aspect-square rounded-2xl bg-white p-1.5 shadow-lg shadow-black/30 ${
                 i % 2 ? "rotate-2" : "-rotate-2"
               }`}
             >
@@ -56,14 +54,14 @@ function PhotoUpload({ photos, onChange }) {
                 <img
                   src={previews[i]}
                   alt={`Photo ${i + 1}`}
-                  className="h-full w-full rounded-lg object-cover"
+                  className="h-full w-full rounded-xl object-cover"
                 />
               )}
               <button
                 type="button"
                 onClick={() => handleRemove(i)}
                 aria-label={`Remove photo ${i + 1}`}
-                className="absolute -top-2 -right-2 grid h-7 w-7 place-items-center rounded-full bg-ink text-sm text-paper shadow"
+                className="absolute -top-2 -right-2 grid h-7 w-7 place-items-center rounded-full bg-lime text-sm font-bold text-forest shadow"
               >
                 ✕
               </button>
