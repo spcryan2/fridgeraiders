@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { playSound } from "../utils/sound.js";
 
 const RING_RADIUS = 54;
 const RING_LENGTH = 2 * Math.PI * RING_RADIUS;
@@ -34,6 +35,7 @@ function CookMode({ steps, onExit }) {
     if (running && secondsLeft === 0) {
       setRunning(false);
       navigator.vibrate?.([300, 100, 300]);
+      playSound("ding",0.8);
     }
   }, [running, secondsLeft]);
 

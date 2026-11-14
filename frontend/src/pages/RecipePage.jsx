@@ -19,6 +19,8 @@ function RecipePage({ recipe, onBack, onStartOver }) {
       <RecipeCard recipe={recipe} />
 
       <button
+        data-sound="pop"
+        onClickCapture={() => setCooking(true)}
         onClick={() => setCooking(true)}
         className="w-full rounded-full bg-accent py-4 text-lg font-semibold text-paper shadow-lg shadow-accent/25 transition active:scale-[0.98]"
       >
