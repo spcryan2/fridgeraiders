@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme {
-  --animate-eq: eq ls ease-in-out infinite;
+  --animate-eq: eq 1s ease-in-out infinite;
 
   @keyframes eq {
     0%,
