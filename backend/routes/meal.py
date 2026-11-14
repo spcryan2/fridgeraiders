@@ -1,6 +1,5 @@
-from flask import Flask, Blueprint
-#from scan import xxx
-import requests
+from flask import Flask, Blueprint, jsonify
+from services.gemini_client import generate_recipes
 import json
 
 meal = Blueprint('meal', __name__)
@@ -35,9 +34,13 @@ def meal():
     prompt = MEAL_PROMPT_TEMPLATE.replace("{{INGREDIENTS}}", ingredients)
     prompt = prompt.replace("{{CONSTRAINTS}}", constraints)
 
-    url = "http://localhost:5173"
-    payload = prompt.jsonify()
-    requests.post(url, json=payload)
+    output = generate_recipes(prompt)
+
+    if not output:
+        return jsonify(error="no recipe could be made from your selection."), 505
+    # need to do sanity checks (step minutes add up to time_minutes, servings matches the request).
+    else:
+        return jsonify(output=output), 200
 
 def ingredients_to_string(meal):
     ingredients = meal.get("ingredients")
@@ -70,42 +73,3 @@ def constraints_to_string(meal):
 
     formatted_constraints = "\n".join(constraints_list)
     return formatted_constraints
-
-#FOR TESTING PURPOSES
-meal = {
-  "ingredients": [
-    {
-      "name": "eggs",
-      "quantity": "6",
-      "category": "dairy",
-      "confidence": "high"
-    },
-    {
-      "name": "green pesto",
-      "quantity": "half a jar",
-      "category": "sauce",
-      "confidence": "low"
-    }
-    ]
-    }
-
-mode = "composer"
-max_mins = 30
-servings = 2
-diet = "vegetarian"
-equipment = ["hob", "microwave"]
-
-meal.update({"mode": mode})
-meal.update({"max_minutes": max_mins})
-meal.update({"servings": servings})
-meal.update({"diet": diet})
-meal.update({"equipment": equipment})
-
-ingredients_out = ingredients_to_string(meal)
-constraint_out = constraints_to_string(meal)
-
-prompt = MEAL_PROMPT_TEMPLATE.replace("{{INGREDIENTS}}", ingredients_out)
-prompt = prompt.replace("{{CONSTRAINTS}}", constraint_out)
-
-print(prompt)
-
