@@ -41,7 +41,6 @@ function App() {
         )}
         {screen === "recipe" && (
           <RecipePage
-            recipe={recipe}
             onBack={handleBackToReview}
             onStartOver={handleStartOver}
           />
