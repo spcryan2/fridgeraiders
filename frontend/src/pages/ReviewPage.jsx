@@ -1,9 +1,23 @@
 import { useState } from "react";
 import IngredientChips from "../components/IngredientChips.jsx";
 import { getMeal } from "../api/client.js";
+import LoadingState from "../components/LoadingState.jsx";
+import ConstraintsForm from "../components/ConstraintsForm.jsx";
+
+const COMPOSE_MESSAGES = [
+  "Finding the harmony...",
+  "Balancing the flavour...",
+  "Writing the Score...",
+];
 
 function ReviewPage({ ingredients, onChange, onComposed, onBack }) {
   const [mode, setMode] = useState("composer");
+  const [constraints, setConstraints] = useState({
+    max_minutes: null,
+    servings: 2,
+    diet: [],
+    equipment: [],
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -11,7 +25,6 @@ function ReviewPage({ ingredients, onChange, onComposed, onBack }) {
     setLoading(true);
     setError(null);
     try {
-      // only send the fields the API contract asks for
       const payload = {
         ingredients: ingredients
           .filter((item) => item.name.trim())
@@ -21,7 +34,13 @@ function ReviewPage({ ingredients, onChange, onComposed, onBack }) {
             use_first: Boolean(item.use_first),
           })),
         mode,
+        servings: constraints.servings,
       };
+      if (constraints.max_minutes)
+        payload.max_minutes = constraints.max_minutes;
+      if (constraints.diet.length) payload.diet = constraints.diet;
+      if (constraints.equipment.length)
+        payload.equipment = constraints.equipment;
       const meal = await getMeal(payload);
       onComposed(meal);
     } catch (err) {
@@ -33,6 +52,7 @@ function ReviewPage({ ingredients, onChange, onComposed, onBack }) {
 
   return (
     <div className="space-y-6">
+      {loading && <LoadingState messages={COMPOSE_MESSAGES} />}
       <header className="flex items-center justify-between pt-6">
         <button onClick={onBack} className="text-stone-500">
           ← Rescan
@@ -42,6 +62,8 @@ function ReviewPage({ ingredients, onChange, onComposed, onBack }) {
       </header>
 
       <IngredientChips ingredients={ingredients} onChange={onChange} />
+
+      <ConstraintsForm value={constraints} onChange={setConstraints} />
 
       <div className="grid grid-cols-2 gap-2 rounded-2xl bg-stone-200 p-1">
         {["classic", "composer"].map((option) => (

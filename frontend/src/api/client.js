@@ -1,5 +1,6 @@
 import mockScan from "../mock/mockScan.json";
 import mockMeal from "../mock/mockMeal.json";
+import { resizeImage } from "../utils/resizeImage.js";
 
 const USE_MOCK = import.meta.env.VITE_USE_MOCK === "true";
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -13,7 +14,7 @@ async function request(url, options) {
       const data = await res.json();
       if (data.error) message = data.error;
     } catch {
-      // a little comment :)
+      // not JSON, keep fallback message
     }
     throw new Error(message);
   }
@@ -27,8 +28,10 @@ export async function scanPhotos(files) {
     return structuredClone(mockScan);
   }
 
+  const resized = await Promise.all(files.map((file) => resizeImage(file)));
+
   const formData = new FormData();
-  for (const file of files) {
+  for (const file of resized) {
     formData.append("photos", file);
   }
   return request("/api/scan", { method: "POST", body: formData });

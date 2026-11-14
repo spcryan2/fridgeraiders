@@ -1,5 +1,7 @@
 import { useState } from "react";
 import ScanPage from "./pages/ScanPage.jsx";
+import ReviewPage from "./pages/ReviewPage.jsx";
+import RecipePage from "./pages/RecipePage.jsx";
 
 function App() {
   const [screen, setScreen] = useState("scan");
@@ -16,6 +18,10 @@ function App() {
     setScreen("recipe");
   }
 
+  function handleBackToReview() {
+    setScreen("review");
+  }
+
   function handleStartOver() {
     setIngredients([]);
     setRecipe(null);
@@ -26,19 +32,19 @@ function App() {
       <main className="max-w-md mx-auto p-4">
         {screen === "scan" && <ScanPage onScanned={handleScanned} />}
         {screen === "review" && (
-          <div>
-            <p>Review page: {ingredients.length} ingredients</p>
-            <button onClick={() => handleComposed({ title: "Test meal" })}>
-              Fake compose
-            </button>
-          </div>
+          <ReviewPage
+            ingredients={ingredients}
+            onChange={setIngredients}
+            onComposed={handleComposed}
+            onBack={handleStartOver}
+          />
         )}
-
         {screen === "recipe" && (
-          <div>
-            <p>Recipe page: {recipe.title}</p>
-            <button onClick={handleStartOver}>Start over</button>
-          </div>
+          <RecipePage
+            recipe={recipe}
+            onBack={handleBackToReview}
+            onStartOver={handleStartOver}
+          />
         )}
       </main>
     </div>
