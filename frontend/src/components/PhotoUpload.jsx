@@ -1,4 +1,15 @@
+import { useEffect, useState } from "react";
+
 function PhotoUpload({ photos, onChange }) {
+  const [previews, setPreviews] = useState([]);
+
+  // make preview links for the photos, and free them when the photos change
+  useEffect(() => {
+    const urls = photos.map((file) => URL.createObjectURL(file));
+    setPreviews(urls);
+    return () => urls.forEach((url) => URL.revokeObjectURL(url));
+  }, [photos]);
+
   function handleAdd(e) {
     const picked = [...e.target.files];
     onChange([...photos, ...picked]);
@@ -8,12 +19,18 @@ function PhotoUpload({ photos, onChange }) {
   function handleRemove(index) {
     onChange(photos.filter((_, i) => i !== index));
   }
+
   return (
-    <div className="space-y-4">
-      <label className="block w-full cursor-pointer rounded-2xl border-2 border-dashed border-stone-300 p-8 text-center hover:border-stone-500">
-        <span className="text-lg font-medium">📷 Add photos</span>
-        <span className="block text-sm text-stone-500">
-          Fridge, cupboard, anything
+    <div className="space-y-5">
+      <label className="group block w-full cursor-pointer rounded-3xl border-2 border-dashed border-lime-bright/50 bg-forest-soft px-6 py-9 text-center transition hover:border-lime-bright">
+        <span className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-lime text-4xl font-bold text-forest shadow-[0_4px_0_var(--color-leaf)] transition group-hover:scale-105 group-active:translate-y-1 group-active:shadow-none">
+          +
+        </span>
+        <span className="wordmark mt-4 block text-2xl text-white">
+          Show us the fridge
+        </span>
+        <span className="mt-1 block text-sm text-white/60">
+          Fridge, cupboard, anything. We're not judging.
         </span>
         <input
           type="file"
@@ -25,18 +42,26 @@ function PhotoUpload({ photos, onChange }) {
       </label>
 
       {photos.length > 0 && (
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-3 gap-3">
           {photos.map((file, i) => (
-            <div key={i} className="relative aspect-square">
-              <img
-                src={URL.createObjectURL(file)}
-                alt={`Photo ${i + 1}`}
-                className="h-full w-full rounded-lg object-cover"
-              />
+            <div
+              key={i}
+              className={`relative aspect-square rounded-2xl bg-white p-1.5 shadow-lg shadow-black/30 ${
+                i % 2 ? "rotate-2" : "-rotate-2"
+              }`}
+            >
+              {previews[i] && (
+                <img
+                  src={previews[i]}
+                  alt={`Photo ${i + 1}`}
+                  className="h-full w-full rounded-xl object-cover"
+                />
+              )}
               <button
                 type="button"
                 onClick={() => handleRemove(i)}
-                className="absolute top-1 right-1 rounded-full bg-black/60 px-2 text-white"
+                aria-label={`Remove photo ${i + 1}`}
+                className="absolute -top-2 -right-2 grid h-7 w-7 place-items-center rounded-full bg-lime text-sm font-bold text-forest shadow"
               >
                 ✕
               </button>

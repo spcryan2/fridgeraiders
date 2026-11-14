@@ -2,14 +2,15 @@ import { useState } from "react";
 import PhotoUpload from "../components/PhotoUpload.jsx";
 import { scanPhotos } from "../api/client.js";
 import LoadingState from "../components/LoadingState.jsx";
+import Logo from "../components/Logo.jsx";
 
-const SCAN_MESSAGE = [
-  "Opening the fridge...",
-  "Reading the labels...",
-  "Tuning the ingredients...",
+const SCAN_MESSAGES = [
+  "Casing the fridge...",
+  "Counting the loot...",
+  "Checking for witnesses...",
 ];
 
-function ScanPage({ onScanned }) {
+function ScanPage({ onScanned, onOpenBoard }) {
   const [photos, setPhotos] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -28,25 +29,40 @@ function ScanPage({ onScanned }) {
   }
 
   return (
-    <div className="space-y-6">
-      {loading && <LoadingState messages={SCAN_MESSAGE} />}
-      <header className="pt-6 text-center">
-        <h1 className="text-3xl font-bold">Leftover Composer</h1>
-        <p className="mt-1 text-stone-500">
-          Snap your fridge. We'll compose a meal.
+    <div className="space-y-9">
+      {loading && <LoadingState messages={SCAN_MESSAGES} />}
+
+      <header className="pt-12 text-center motion-safe:animate-rise">
+        <Logo size="lg" tone="dark" />
+        <p className="mt-5 text-sm font-semibold tracking-[0.35em] text-lime-bright uppercase">
+          Snap it. Cook it.
         </p>
       </header>
 
-      <PhotoUpload photos={photos} onChange={setPhotos} />
+      <div className="motion-safe:animate-rise" style={{ animationDelay: "120ms" }}>
+        <PhotoUpload photos={photos} onChange={setPhotos} />
+      </div>
 
-      {error && <p className="text-center text-red-600">{error}</p>}
+      {error && (
+        <p className="rounded-2xl bg-tomato/25 px-4 py-3 text-center text-sm text-cream">
+          Raid foiled: {error}
+        </p>
+      )}
 
       <button
         onClick={handleScan}
         disabled={photos.length === 0 || loading}
-        className="w-full rounded-2xl bg-stone-900 py-4 text-lg font-semibold text-white disabled:opacity-40"
+        className="wordmark w-full rounded-full bg-lime py-5 text-2xl text-forest shadow-[0_5px_0_var(--color-leaf)] transition motion-safe:animate-rise active:translate-y-1 active:shadow-[0_1px_0_var(--color-leaf)] disabled:opacity-30 disabled:shadow-none"
+        style={{ animationDelay: "240ms" }}
       >
-        {loading ? "Reading your fridge…" : "Scan ingredients"}
+        {loading ? "Raiding…" : "Scan the loot →"}
+      </button>
+
+      <button
+        onClick={onOpenBoard}
+        className="mx-auto block rounded-full px-5 py-2.5 font-semibold text-lime-bright ring-2 ring-forest-soft transition hover:ring-lime-bright/60 active:scale-95"
+      >
+        Most wanted recipes
       </button>
     </div>
   );

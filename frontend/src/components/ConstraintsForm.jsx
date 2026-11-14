@@ -14,14 +14,23 @@ function Chip({ selected, onClick, children }) {
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-full border px-3 py-1.5 text-sm capitalize ${
+      aria-pressed={selected}
+      className={`rounded-full px-3.5 py-1.5 text-sm font-medium capitalize transition active:scale-95 ${
         selected
-          ? "border-stone-900 bg-stone-900 text-white"
-          : "border-stone-300 bg-white text-stone-700"
+          ? "bg-forest text-white"
+          : "bg-cream text-forest ring-1 ring-forest/12 hover:ring-forest/30"
       }`}
     >
       {children}
     </button>
+  );
+}
+
+function Label({ title, hint }) {
+  return (
+    <h4 className="mb-2 text-sm font-semibold">
+      {title} <span className="font-normal text-forest/50">· {hint}</span>
+    </h4>
   );
 }
 
@@ -34,20 +43,26 @@ function ConstraintsForm({ value, onChange }) {
   }
 
   return (
-    <section className="rounded-2xl border border-stone-200 bg-white">
+    <section className="rounded-3xl bg-white ring-1 ring-forest/10">
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="flex w-full items-center justify-between px-4 py-3 font-medium"
+        aria-expanded={open}
+        className="flex w-full items-center gap-3 px-5 py-4 text-left"
       >
-        <span>Options</span>
-        <span className="text-stone-400">{open ? "▲" : "▼"}</span>
+        <span className="wordmark text-xl">House rules</span>
+        <span className="text-sm text-forest/50">time, diet, kit</span>
+        <span
+          className={`ml-auto grid h-8 w-8 place-items-center rounded-full bg-cream transition-transform ${open ? "rotate-180" : ""}`}
+        >
+          ▾
+        </span>
       </button>
 
       {open && (
-        <div className="space-y-5 border-t border-stone-200 p-4">
+        <div className="space-y-5 px-5 pb-5 motion-safe:animate-step-in">
           <div>
-            <h4 className="mb-2 text-sm font-semibold">Time</h4>
+            <Label title="Time limit" hint="tops" />
             <div className="flex flex-wrap gap-2">
               <Chip
                 selected={value.max_minutes === null}
@@ -61,24 +76,26 @@ function ConstraintsForm({ value, onChange }) {
                   selected={value.max_minutes === mins}
                   onClick={() => update("max_minutes", mins)}
                 >
-                  {mins} min
+                  <span className="normal-case">{mins} min</span>
                 </Chip>
               ))}
             </div>
           </div>
 
           <div>
-            <h4 className="mb-2 text-sm font-semibold">Servings</h4>
+            <Label title="Servings" hint="how many people" />
             <div className="flex items-center gap-4">
               <button
                 type="button"
                 onClick={() =>
                   update("servings", Math.max(1, value.servings - 1))
                 }
-                className="h-9 w-9 rounded-full border border-stone-300 text-lg"
+                className="h-10 w-10 rounded-full bg-cream text-lg ring-1 ring-forest/12 active:scale-95"
                 aria-label="Fewer servings"
-              ></button>
-              <span className="w-6 text-center text-lg font-semibold">
+              >
+                −
+              </button>
+              <span className="wordmark w-8 text-center text-3xl">
                 {value.servings}
               </span>
               <button
@@ -86,7 +103,7 @@ function ConstraintsForm({ value, onChange }) {
                 onClick={() =>
                   update("servings", Math.min(8, value.servings + 1))
                 }
-                className="h-9 w-9 rounded-full border border-stone-300 text-lg"
+                className="h-10 w-10 rounded-full bg-cream text-lg ring-1 ring-forest/12 active:scale-95"
                 aria-label="More servings"
               >
                 +
@@ -95,7 +112,7 @@ function ConstraintsForm({ value, onChange }) {
           </div>
 
           <div>
-            <h4 className="mb-2 text-sm font-semibold">Diet</h4>
+            <Label title="Diet" hint="we never break it" />
             <div className="flex flex-wrap gap-2">
               {DIET_OPTIONS.map((diet) => (
                 <Chip
@@ -110,7 +127,7 @@ function ConstraintsForm({ value, onChange }) {
           </div>
 
           <div>
-            <h4 className="mb-2 text-sm font-semibold">Equipment you have</h4>
+            <Label title="Kit" hint="what you have" />
             <div className="flex flex-wrap gap-2">
               {EQUIPMENT_OPTIONS.map((item) => (
                 <Chip

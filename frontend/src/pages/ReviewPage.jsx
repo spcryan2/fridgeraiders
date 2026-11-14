@@ -3,11 +3,19 @@ import IngredientChips from "../components/IngredientChips.jsx";
 import { getMeal } from "../api/client.js";
 import LoadingState from "../components/LoadingState.jsx";
 import ConstraintsForm from "../components/ConstraintsForm.jsx";
+import SectionHeading from "../components/SectionHeading.jsx";
+import Logo from "../components/Logo.jsx";
 
 const COMPOSE_MESSAGES = [
-  "Finding the harmony...",
-  "Balancing the flavour...",
-  "Writing the Score...",
+  "Planning the job...",
+  "Pairing the unlikely...",
+  "Composing the getaway meal...",
+];
+
+// the backend values stay classic/composer, only the labels change
+const MODES = [
+  { value: "classic", label: "Play it safe", caption: "A dish you know" },
+  { value: "composer", label: "Composer", caption: "Weird pairings that work" },
 ];
 
 function ReviewPage({ ingredients, onChange, onComposed, onBack }) {
@@ -51,42 +59,72 @@ function ReviewPage({ ingredients, onChange, onComposed, onBack }) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {loading && <LoadingState messages={COMPOSE_MESSAGES} />}
+
       <header className="flex items-center justify-between pt-6">
-        <button onClick={onBack} className="text-stone-500">
+        <button
+          onClick={onBack}
+          className="rounded-full px-3 py-1.5 text-sm font-semibold text-forest/60 hover:bg-forest/5 hover:text-forest"
+        >
           ← Rescan
         </button>
-        <h1 className="text-xl font-bold">Your ingredients</h1>
-        <span className="w-16" />
+        <Logo />
       </header>
 
-      <IngredientChips ingredients={ingredients} onChange={onChange} />
+      <section className="space-y-4 motion-safe:animate-rise">
+        <SectionHeading aside={`${ingredients.length} items`}>
+          The loot
+        </SectionHeading>
+        <IngredientChips ingredients={ingredients} onChange={onChange} />
+      </section>
 
-      <ConstraintsForm value={constraints} onChange={setConstraints} />
-
-      <div className="grid grid-cols-2 gap-2 rounded-2xl bg-stone-200 p-1">
-        {["classic", "composer"].map((option) => (
-          <button
-            key={option}
-            onClick={() => setMode(option)}
-            className={`rounded-xl py-2 font-medium capitalize ${
-              mode === option ? "bg-white shadow" : "text-stone-500"
-            }`}
-          >
-            {option}
-          </button>
-        ))}
+      <div className="motion-safe:animate-rise" style={{ animationDelay: "100ms" }}>
+        <ConstraintsForm value={constraints} onChange={setConstraints} />
       </div>
 
-      {error && <p className="text-center text-red-600">{error}</p>}
+      <section
+        className="space-y-4 motion-safe:animate-rise"
+        style={{ animationDelay: "200ms" }}
+      >
+        <SectionHeading>Pick your style</SectionHeading>
+        <div className="grid grid-cols-2 gap-3">
+          {MODES.map((option) => (
+            <button
+              key={option.value}
+              onClick={() => setMode(option.value)}
+              aria-pressed={mode === option.value}
+              className={`rounded-3xl p-4 text-left transition active:scale-[0.97] ${
+                mode === option.value
+                  ? "bg-forest text-white shadow-[0_4px_0_var(--color-lime)]"
+                  : "bg-white text-forest ring-1 ring-forest/10 hover:ring-forest/30"
+              }`}
+            >
+              <span className="wordmark block text-xl">{option.label}</span>
+              <span
+                className={`mt-1 block text-sm ${
+                  mode === option.value ? "text-lime-bright" : "text-forest/60"
+                }`}
+              >
+                {option.caption}
+              </span>
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {error && (
+        <p className="rounded-2xl bg-tomato/10 px-4 py-3 text-center text-sm text-tomato">
+          Raid foiled: {error}
+        </p>
+      )}
 
       <button
         onClick={handleCompose}
         disabled={ingredients.length === 0 || loading}
-        className="w-full rounded-2xl bg-stone-900 py-4 text-lg font-semibold text-white disabled:opacity-40"
+        className="wordmark w-full rounded-full bg-lime py-5 text-2xl text-forest shadow-[0_5px_0_var(--color-leaf)] transition active:translate-y-1 active:shadow-[0_1px_0_var(--color-leaf)] disabled:opacity-30 disabled:shadow-none"
       >
-        {loading ? "Composing…" : "Compose a meal"}
+        {loading ? "Planning…" : "Pull off the raid →"}
       </button>
     </div>
   );

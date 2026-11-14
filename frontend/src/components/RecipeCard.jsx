@@ -1,3 +1,5 @@
+import SectionHeading from "./SectionHeading.jsx";
+
 function formatExtra(item) {
   if (typeof item === "string") return item;
   return item.amount ? `${item.name} (${item.amount})` : item.name;
@@ -5,77 +7,103 @@ function formatExtra(item) {
 
 function RecipeCard({ recipe }) {
   return (
-    <article className="space-y-6 rounded-3xl bg-white p-6 shadow-sm">
-      <header className="space-y-2">
-        <h2 className="text-2xl font-bold leading-tight">{recipe.title}</h2>
-        <p className="text-stone-600">{recipe.summary}</p>
-        <div className="flex flex-wrap gap-2 text-sm">
-          <span className="rounded-full bg-stone-100 px-3 py-1">
+    <article className="overflow-hidden rounded-[2rem] bg-white ring-1 ring-forest/10 motion-safe:animate-rise">
+      <header className="space-y-3 bg-forest px-6 pt-6 pb-7 text-white">
+        <p className="text-xs font-semibold tracking-[0.3em] text-lime-bright uppercase">
+          Tonight's getaway meal
+        </p>
+        <h2 className="wordmark text-4xl text-white normal-case">
+          {recipe.title}
+        </h2>
+        <p className="text-white/75">{recipe.summary}</p>
+        <div className="flex flex-wrap gap-2 pt-1 text-sm font-semibold">
+          <span className="rounded-full bg-forest-soft px-3 py-1">
             ⏱ {recipe.time_minutes} min
           </span>
-          <span className="rounded-full bg-stone-100 px-3 py-1">
+          <span className="rounded-full bg-forest-soft px-3 py-1">
             🍽 Serves {recipe.servings}
           </span>
-          <span className="rounded-full bg-stone-100 px-3 py-1 capitalize">
-            {recipe.difficulty}
-          </span>
+          {recipe.difficulty && (
+            <span className="rounded-full bg-forest-soft px-3 py-1 capitalize">
+              {recipe.difficulty}
+            </span>
+          )}
         </div>
       </header>
 
-      {recipe.pairing && (
-        <section className="rounded-2xl border border-violet-200 bg-violet-50 p-4">
-          <h3 className="text-sm font-semibold uppercase tracking-wide text-violet-700">
-            ♪ The composition
-          </h3>
-          <p className="mt-1 font-medium">{recipe.pairing.items.join(" + ")}</p>
-          <p className="mt-2 text-sm text-stone-700">{recipe.pairing.reason}</p>
-        </section>
-      )}
+      <div className="space-y-8 p-6">
+        {recipe.pairing && (
+          <section className="-mt-12 rounded-3xl bg-lime-bright p-5 text-forest shadow-[0_4px_0_rgb(31_61_43/0.15)]">
+            <h3 className="text-xs font-bold tracking-[0.2em] uppercase">
+              ★ Why this works
+            </h3>
+            <p className="wordmark mt-2 text-xl normal-case">
+              {recipe.pairing.items.map((item, i) => (
+                <span key={item}>
+                  {i > 0 && <span className="text-leaf"> + </span>}
+                  {item}
+                </span>
+              ))}
+            </p>
+            <p className="mt-2 text-sm leading-relaxed text-forest/80">
+              {recipe.pairing.reason}
+            </p>
+          </section>
+        )}
 
-      <section>
-        <h3 className="mb-2 font-semibold">From your fridge</h3>
-        <ul className="space-y-1">
-          {recipe.ingredients_used.map((item, i) => (
-            <li
-              key={i}
-              className="flex justify-between border-b border-stone-100 py-1"
-            >
-              <span>{item.name}</span>
-              <span className="text-stone-500">{item.amount}</span>
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      {recipe.extra_needed.length > 0 && (
-        <section>
-          <h3 className="mb-2 font-semibold">You'll also need</h3>
-          <ul className="list-disc pl-5 text-stone-700">
-            {recipe.extra_needed.map((item, i) => (
-              <li key={i}>{formatExtra(item)}</li>
+        <section className="space-y-3">
+          <SectionHeading>From your fridge</SectionHeading>
+          <ul className="divide-y divide-forest/8">
+            {recipe.ingredients_used.map((item, i) => (
+              <li key={i} className="flex items-center justify-between gap-3 py-2">
+                <span>{item.name}</span>
+                <span className="rounded-full bg-sprout px-2.5 py-0.5 text-sm text-forest/80">
+                  {item.amount}
+                </span>
+              </li>
             ))}
           </ul>
         </section>
-      )}
 
-      <section>
-        <h3 className="mb-2 font-semibold">Method</h3>
-        <ol className="space-y-3">
-          {recipe.steps.map((step) => (
-            <li key={step.number} className="flex gap-3">
-              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-stone-900 text-sm font-bold text-white">
-                {step.number}
-              </span>
-              <div>
-                <p>{step.instruction}</p>
-                {step.minutes && (
-                  <p className="text-xs text-stone-500">{step.minutes} min</p>
-                )}
-              </div>
-            </li>
-          ))}
-        </ol>
-      </section>
+        {recipe.extra_needed.length > 0 && (
+          <section className="space-y-3">
+            <SectionHeading>Grab these too</SectionHeading>
+            <ul className="flex flex-wrap gap-2">
+              {recipe.extra_needed.map((item, i) => (
+                <li
+                  key={i}
+                  className="rounded-full border-2 border-dashed border-forest/20 px-3 py-1 text-sm"
+                >
+                  + {formatExtra(item)}
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        <section className="space-y-4">
+          <SectionHeading aside={`${recipe.steps.length} steps`}>
+            The plan
+          </SectionHeading>
+          <ol className="space-y-4">
+            {recipe.steps.map((step) => (
+              <li key={step.number} className="flex gap-4">
+                <span className="wordmark grid h-9 w-9 shrink-0 place-items-center rounded-full bg-lime text-lg text-forest">
+                  {step.number}
+                </span>
+                <div className="pt-1">
+                  <p className="leading-relaxed">{step.instruction}</p>
+                  {step.minutes > 0 && (
+                    <p className="mt-1 text-xs font-semibold text-forest/50">
+                      ⏱ {step.minutes} min
+                    </p>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ol>
+        </section>
+      </div>
     </article>
   );
 }
