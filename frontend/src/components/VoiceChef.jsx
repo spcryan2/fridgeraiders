@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useConversation, useConversationClientTool } from "@elevenlabs/react";
 
 const AGENT_ID = import.meta.env.VITE_ELEVENLABS_AGENT_ID;
@@ -22,8 +22,19 @@ function speak(text) {
 // talks to the ElevenLabs agent. It must sit inside a ConversationProvider.
 // The agent "presses" cook mode's buttons through the tools below.
 function VoiceChef({ title, steps, index, stepText, timersDone, describeStep, onNext, onBack, onStartTimer, onPauseTimer }) {
+  // why the last call ended, if it wasn't the user hanging up
+  const [problem, setProblem] = useState(null);
+
   const { status, message, isSpeaking, startSession, endSession, sendContextualUpdate, sendUserMessage } =
-    useConversation();
+    useConversation({
+      onDisconnect: (details) => {
+        console.warn("[voice chef] disconnected", details);
+        if (details.reason === "user") return;
+        const why = details.message || details.closeReason || details.reason;
+        setProblem(`The chef hung up (${why}${details.closeCode ? `, code ${details.closeCode}` : ""})`);
+      },
+      onError: (msg, context) => console.warn("[voice chef] error", msg, context),
+    });
   const connected = status === "connected";
   const connecting = status === "connecting";
 
@@ -83,8 +94,12 @@ function VoiceChef({ title, steps, index, stepText, timersDone, describeStep, on
       endSession();
       return;
     }
+    setProblem(null);
     startSession({
       agentId: AGENT_ID,
+      // websocket works on nearly any network. The default (WebRTC) is often
+      // blocked on uni and hackathon wifi, which makes the call drop instantly.
+      connectionType: "websocket",
       dynamicVariables: {
         recipe_title: title || "this recipe",
         recipe_steps: steps
@@ -118,6 +133,12 @@ function VoiceChef({ title, steps, index, stepText, timersDone, describeStep, on
         <span className="flex-1 text-left">{label}</span>
         {connected && <span className="text-sm opacity-70">Tap to hang up</span>}
       </button>
+      {problem && status !== "error" && (
+        <div className="space-y-2 px-2 text-sm text-white/70">
+          <p>{problem}. Tap to try again.</p>
+          {readAloud}
+        </div>
+      )}
       {status === "error" && (
         <div className="space-y-2 px-2 text-sm text-white/70">
           <p>
