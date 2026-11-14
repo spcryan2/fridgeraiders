@@ -39,6 +39,7 @@ function RecipePage({ recipe, from, onRecipeChange, onBack, onStartOver, onOpenB
 
       {recipe.steps.length > 0 && (
         <button
+          data-sound="pop"
           onClick={() => setCooking(true)}
           className="wordmark w-full rounded-full bg-lime py-5 text-2xl text-forest shadow-[0_5px_0_var(--color-leaf)] transition active:translate-y-1 active:shadow-[0_1px_0_var(--color-leaf)]"
         >

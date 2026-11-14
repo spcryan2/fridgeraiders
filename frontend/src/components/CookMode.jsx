@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import { ConversationProvider } from "@elevenlabs/react";
+import { useEffect, useState } from "react";
+import { playSound } from "../utils/sound.js";
 import RaiderFridge from "./RaiderFridge.jsx";
 import VoiceChef from "./VoiceChef.jsx";
 
@@ -40,6 +40,7 @@ function CookMode({ steps, title, onExit }) {
       setRunning(false);
       setTimersDone((n) => n + 1);
       navigator.vibrate?.([300, 100, 300]);
+      playSound("ding",0.8);
     }
   }, [running, secondsLeft]);
 
