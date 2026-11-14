@@ -2,9 +2,10 @@ from google import genai
 from google.genai import types
 
 from config import GEMINI_API_KEY, GEMINI_MODEL
-from prompts import SCAN_PROMPT
+from prompts import load_prompt
 from schemas.ingredient_schema import IngredientList
 
+SCAN_PROMPT= load_prompt("scan_prompt")
 client = genai.Client(api_key=GEMINI_API_KEY) if GEMINI_API_KEY else None
 
 def analyse_image(image_bytes: bytes, mime_type:str)->list[str]:
