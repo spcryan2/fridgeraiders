@@ -1,0 +1,58 @@
+{
+  "ingredients": [
+    {
+      "name": "eggs",
+      "quantity": "6",
+      "category": "dairy",
+      "confidence": "high"
+    },
+    {
+      "name": "spinach",
+      "quantity": "1 bag",
+      "category": "veg",
+      "confidence": "high"
+    },
+    {
+      "name": "green pesto",
+      "quantity": "half a jar",
+      "category": "sauce",
+      "confidence": "low"
+    },
+    {
+      "name": "cheddar",
+      "quantity": "200g",
+      "category": "dairy",
+      "confidence": "high"
+    },
+    {
+      "name": "cooked rice",
+      "quantity": "1 tub",
+      "category": "grain",
+      "confidence": "high"
+    },
+    {
+      "name": "chorizo",
+      "quantity": "half a ring",
+      "category": "meat",
+      "confidence": "high"
+    },
+    {
+      "name": "apple",
+      "quantity": "2",
+      "category": "fruit",
+      "confidence": "high"
+    },
+    {
+      "name": "natural yogurt",
+      "quantity": "a few spoonfuls",
+      "category": "dairy",
+      "confidence": "low"
+    },
+    {
+      "name": "red onion",
+      "quantity": "1",
+      "category": "veg",
+      "confidence": "high"
+    }
+  ]
+}
