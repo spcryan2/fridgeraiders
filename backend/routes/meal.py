@@ -11,7 +11,7 @@ with open("../prompts/meal_prompt.txt", encoding="utf-8") as f:
 
 @meal.route("/api/meal", methods=["GET","POST"])
 def meal():
-    with open("../frontend/src/mock/mockMeal.json") as f:
+    with open("../frontend/src/mock/mockScan.json") as f:
         try:
             meal = json.load(f)
         except:
