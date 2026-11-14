@@ -4,11 +4,15 @@ from google.genai import types
 from config import GEMINI_API_KEY, GEMINI_MODEL, GEMINI_FALLBACK_MODEL, MOCK_GEMINI
 from prompts import load_prompt
 from schemas.ingredient_schema import IngredientList
+from schemas.recipe_schema import Recipe
+import json
 import time
+from pathlib import Path
 
 from google.genai import errors
 
 SCAN_PROMPT= load_prompt("scan_prompt")
+MOCK_MEAL_PATH = Path(__file__).resolve().parents[2] / "frontend" / "src" / "mock" / "mockMeal.json"
 client = genai.Client(
     api_key=GEMINI_API_KEY,
     http_options=types.HttpOptions(timeout=30_000),   # milliseconds = 30 seconds
@@ -51,3 +55,22 @@ def analyse_image(image_bytes: bytes, mime_type:str)->list[str]:
                  seen.add(name)
                  cleaned.append(name)
     return cleaned
+
+
+def generate_meal(prompt: str) -> dict:
+    if MOCK_GEMINI:
+        return json.loads(MOCK_MEAL_PATH.read_text(encoding="utf-8"))
+    if client is None:
+        raise RuntimeError("GEMINI_API_KEY is not set. Add it to your .env file")
+
+    response = _generate_with_retry(
+        contents=[prompt],
+        config=types.GenerateContentConfig(
+            response_mime_type="application/json",
+            response_schema=Recipe,
+            temperature=0.7,
+        ),
+    )
+    if response.parsed is None:
+        raise ValueError("Gemini sent back a recipe we couldn't read")
+    return response.parsed.model_dump()
