@@ -2,6 +2,7 @@ import { useState } from "react";
 import IngredientChips from "../components/IngredientChips.jsx";
 import { getMeal } from "../api/client.js";
 import LoadingState from "../components/LoadingState.jsx";
+import ConstraintsForm from "../components/ConstraintsForm.jsx";
 
 const COMPOSE_MESSAGES = [
   "Finding the harmony...",
@@ -11,6 +12,12 @@ const COMPOSE_MESSAGES = [
 
 function ReviewPage({ ingredients, onChange, onComposed, onBack }) {
   const [mode, setMode] = useState("composer");
+  const [constraints, setConstraints] = useState({
+    max_minutes: null,
+    servings: 2,
+    diet: [],
+    equipment: [],
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -27,7 +34,13 @@ function ReviewPage({ ingredients, onChange, onComposed, onBack }) {
             use_first: Boolean(item.use_first),
           })),
         mode,
+        servings: constraints.servings,
       };
+      if (constraints.max_minutes)
+        payload.max_minutes = constraints.max_minutes;
+      if (constraints.diet.length) payload.diet = constraints.diet;
+      if (constraints.equipment.length)
+        payload.equipment = constraints.equipment;
       const meal = await getMeal(payload);
       onComposed(meal);
     } catch (err) {
@@ -49,6 +62,8 @@ function ReviewPage({ ingredients, onChange, onComposed, onBack }) {
       </header>
 
       <IngredientChips ingredients={ingredients} onChange={onChange} />
+
+      <ConstraintsForm value={constraints} onChange={setConstraints} />
 
       <div className="grid grid-cols-2 gap-2 rounded-2xl bg-stone-200 p-1">
         {["classic", "composer"].map((option) => (
