@@ -6,7 +6,7 @@ scan_bp = Blueprint("scan",__name__)
 
 @scan_bp.post("/api/scan")
 def scan():
-    file = request.files.get("image")
+    file = request.files.get("photos")
     if file is None:
         return jsonify(error="no photos uploaded."), 400
 
