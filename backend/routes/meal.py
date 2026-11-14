@@ -7,24 +7,11 @@ meal = Blueprint('meal', __name__)
 
 @meal.route("/api/meal", methods=["GET","POST"])
 def meal():
-    meal = {
-  "ingredients": [
-    {
-      "name": "eggs",
-      "quantity": "6",
-      "category": "dairy",
-      "confidence": "high"
-    },
-    {
-      "name": "green pesto",
-      "quantity": "half a jar",
-      "category": "sauce",
-      "confidence": "low"
-    }
-    ]
-    }
-    #if request.get_json(silent=True) == None:
-        #print("JSON NOT FOUND PLACEHOLDER")
+    with open("../frontend/src/mock/mockMeal.json") as f:
+        try:
+            meal = json.load(f)
+        except:
+            print("ERROR: Malformed JSON or JSON not found")
 
     mode = "composer"
     max_mins = 30
