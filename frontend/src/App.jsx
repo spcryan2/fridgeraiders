@@ -1,6 +1,7 @@
 import { useState } from "react";
 import ScanPage from "./pages/ScanPage.jsx";
 import ReviewPage from "./pages/ReviewPage.jsx";
+import RecipePage from "./pages/RecipePage.jsx";
 
 function App() {
   const [screen, setScreen] = useState("scan");
@@ -15,6 +16,10 @@ function App() {
   function handleComposed(meal) {
     setRecipe(meal);
     setScreen("recipe");
+  }
+
+  function handleBackToReview() {
+    setScreen("review");
   }
 
   function handleStartOver() {
@@ -35,10 +40,11 @@ function App() {
           />
         )}
         {screen === "recipe" && (
-          <div>
-            <p>Recipe page: {recipe.title}</p>
-            <button onClick={handleStartOver}>Start over</button>
-          </div>
+          <RecipePage
+            recipe={recipe}
+            onBack={handleBackToReview}
+            onStartOver={handleStartOver}
+          />
         )}
       </main>
     </div>
