@@ -1,6 +1,13 @@
 import { useState } from "react";
 import PhotoUpload from "../components/PhotoUpload.jsx";
 import { scanPhotos } from "../api/client.js";
+import LoadingState from "../components/LoadingState.jsx";
+
+const SCAN_MESSAGE = [
+  "Opening the fridge...",
+  "Reading the labels...",
+  "Tuning the ingredients...",
+];
 
 function ScanPage({ onScanned }) {
   const [photos, setPhotos] = useState([]);
@@ -22,6 +29,7 @@ function ScanPage({ onScanned }) {
 
   return (
     <div className="space-y-6">
+      {loading && <LoadingState messages={SCAN_MESSAGE} />}
       <header className="pt-6 text-center">
         <h1 className="text-3xl font-bold">Leftover Composer</h1>
         <p className="mt-1 text-stone-500">

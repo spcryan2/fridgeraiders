@@ -1,6 +1,13 @@
 import { useState } from "react";
 import IngredientChips from "../components/IngredientChips.jsx";
 import { getMeal } from "../api/client.js";
+import LoadingState from "../components/LoadingState.jsx";
+
+const COMPOSE_MESSAGES = [
+  "Finding the harmony...",
+  "Balancing the flavour...",
+  "Writing the Score...",
+];
 
 function ReviewPage({ ingredients, onChange, onComposed, onBack }) {
   const [mode, setMode] = useState("composer");
@@ -32,6 +39,7 @@ function ReviewPage({ ingredients, onChange, onComposed, onBack }) {
 
   return (
     <div className="space-y-6">
+      {loading && <LoadingState messages={COMPOSE_MESSAGES} />}
       <header className="flex items-center justify-between pt-6">
         <button onClick={onBack} className="text-stone-500">
           ← Rescan

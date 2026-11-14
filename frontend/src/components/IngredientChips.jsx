@@ -3,7 +3,6 @@ import { useState } from "react";
 function IngredientChips({ ingredients, onChange }) {
   const [newName, setNewName] = useState("");
 
-  // swap one ingredient for an updated copy, leave the rest alone
   function updateItem(index, changes) {
     onChange(
       ingredients.map((item, i) =>
@@ -17,7 +16,7 @@ function IngredientChips({ ingredients, onChange }) {
   }
 
   function handleAdd(e) {
-    e.preventDefault(); // stop the form reloading the page
+    e.preventDefault();
     const name = newName.trim();
     if (!name) return;
     onChange([
@@ -60,7 +59,7 @@ function IngredientChips({ ingredients, onChange }) {
               onChange={(e) =>
                 updateItem(i, { name: e.target.value, confidence: "high" })
               }
-              size={Math.max(item.name.length, 3)}
+              style={{ width: `${Math.max(item.name.length, 3) + 0.5}ch` }}
               className="bg-transparent outline-none"
             />
             {item.quantity && (

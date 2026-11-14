@@ -1,1 +1,15 @@
 @import "tailwindcss";
+
+@theme {
+  --animate-eq: eq ls ease-in-out infinite;
+
+  @keyframes eq {
+    0%,
+    100% {
+      transform: scaleY(0.3);
+    }
+    50% {
+      transform: scaleY(1);
+    }
+  }
+}
