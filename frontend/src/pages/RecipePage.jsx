@@ -47,7 +47,11 @@ function RecipePage({ recipe, from, onRecipeChange, onBack, onStartOver, onOpenB
       )}
 
       {cooking && (
-        <CookMode steps={recipe.steps} onExit={() => setCooking(false)} />
+        <CookMode
+          steps={recipe.steps}
+          title={recipe.title}
+          onExit={() => setCooking(false)}
+        />
       )}
 
       <div className="grid grid-cols-2 gap-3">
