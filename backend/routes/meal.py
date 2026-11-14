@@ -1,75 +1,76 @@
-from flask import Flask, Blueprint, jsonify
-from services.gemini_client import generate_recipes
-import json
+from flask import Blueprint, jsonify, request
 
-meal = Blueprint('meal', __name__)
+from prompts import load_prompt
+from services.gemini_client import generate_meal
 
-with open("../prompts/meal_prompt.txt", encoding="utf-8") as f:
-    MEAL_PROMPT_TEMPLATE = f.read()
+meal_bp = Blueprint("meal", __name__)
+
+MEAL_PROMPT_TEMPLATE = load_prompt("meal_prompt")
+
+MODE_TEXT = {
+    "classic": "the mode is classic: the recipe shouldn't be too adventurous and should be a known meal. Set pairing to null.",
+    "composer": "the mode is composer: explore new options and pair ingredients you wouldn't think would work well together. Explain the pairing in the pairing field.",
+}
 
 
-@meal.route("/api/meal", methods=["GET","POST"])
+@meal_bp.post("/api/meal")
 def meal():
-    with open("../frontend/src/mock/mockScan.json") as f:
-        try:
-            meal = json.load(f)
-        except:
-            print("ERROR: Malformed JSON or JSON not found")
+    data = request.get_json(silent=True) or {}
 
-    mode = "composer"
-    max_mins = 30
-    servings = 2
-    diet = "vegetarian"
-    equipment = ["hob", "microwave"]
+    ingredients = data.get("ingredients") or []
+    if not ingredients:
+        return jsonify(error="no ingredients sent."), 400
 
-    meal.update({"mode": mode})
-    meal.update({"max_minutes": max_mins})
-    meal.update({"servings": servings})
-    meal.update({"diet": diet})
-    meal.update({"equipment": equipment})
+    mode = data.get("mode", "classic")
+    if mode not in MODE_TEXT:
+        return jsonify(error="mode must be classic or composer."), 400
 
-    ingredients = ingredients_to_string(meal)
-    constraints = constraints_to_string(meal)
+    prompt = MEAL_PROMPT_TEMPLATE.replace("{{INGREDIENTS}}", ingredients_to_string(ingredients))
+    prompt = prompt.replace("{{CONSTRAINTS}}", constraints_to_string(data, mode))
 
-    prompt = MEAL_PROMPT_TEMPLATE.replace("{{INGREDIENTS}}", ingredients)
-    prompt = prompt.replace("{{CONSTRAINTS}}", constraints)
+    try:
+        recipe = generate_meal(prompt)
+    except RuntimeError as exc:
+        return jsonify(error=str(exc)), 500
+    except Exception as exc:
+        return jsonify(error=f"Gemini request failed: {exc}"), 502
 
-    output = generate_recipes(prompt)
+    # the prompt asks for an empty recipe when nothing sensible can be made
+    if not recipe.get("title") or not recipe.get("steps"):
+        return jsonify(error="Couldn't compose a sensible meal from those ingredients. Try adding a few more."), 422
 
-    if not output:
-        return jsonify(error="no recipe could be made from your selection."), 505
-    # need to do sanity checks (step minutes add up to time_minutes, servings matches the request).
-    else:
-        return jsonify(output=output), 200
+    if mode == "classic":
+        recipe["pairing"] = None
 
-def ingredients_to_string(meal):
-    ingredients = meal.get("ingredients")
-    ingredients_list = []
-    for i in range(len(ingredients)):
-        ingredient = ("name: " + ingredients[i].get("name") +
-                      ", quantity: " + ingredients[i].get("quantity") +
-                      ", category: " + ingredients[i].get("category") +
-                      ", confidence: " + ingredients[i].get("confidence"))
-        ingredients_list.append(ingredient)
+    return jsonify(recipe)
 
-    formatted_ingredients = "\n".join(ingredients_list)
 
-    return formatted_ingredients
+def ingredients_to_string(ingredients):
+    lines = []
+    for item in ingredients:
+        line = f"name: {item.get('name', '')}"
+        if item.get("quantity"):
+            line += f", quantity: {item['quantity']}"
+        if item.get("use_first"):
+            line += ", use this up first"
+        lines.append(line)
+    return "\n".join(lines)
 
-def constraints_to_string(meal):
-    constraints = ["mode", "max_minutes", "servings", "diet", "equipment"]
-    constraint_templates = {
-        "mode" : "the mode is {}, where classic means the recipe shouldn't be too adventurous and should be a known meal, and composer means explore new options and make a recipe with ingredients you wouldn't think would work well together.",
-        "max_minutes" : "the total time (including prep and cooking) must be no more than {} minutes",
-        "servings" : "the recipe should serve {} people. You should scale ingredient quantities to match",
-        "diet" : "every recipe must be {}. Do not include any recipes that would break this diet under any circumstance",
-        "equipment" : "the user only has access to the following appliances: {}, so recipes must not need anything else"
-    }
-    constraints_list = []
 
-    for i in range(len(constraints)):
-        constraint = constraint_templates.get(constraints[i]).format(meal.get(constraints[i]))
-        constraints_list.append(constraint)
+def constraints_to_string(data, mode):
+    lines = [MODE_TEXT[mode]]
 
-    formatted_constraints = "\n".join(constraints_list)
-    return formatted_constraints
+    if data.get("max_minutes"):
+        lines.append(f"the total time (including prep and cooking) must be no more than {data['max_minutes']} minutes")
+
+    servings = data.get("servings") or 2
+    lines.append(f"the recipe should serve {servings} people. You should scale ingredient quantities to match")
+
+    # diet and equipment arrive as lists from the frontend
+    if data.get("diet"):
+        lines.append(f"every recipe must be {', '.join(data['diet'])}. Do not include any recipes that would break this diet under any circumstance")
+
+    if data.get("equipment"):
+        lines.append(f"the user only has access to the following appliances: {', '.join(data['equipment'])}, so recipes must not need anything else")
+
+    return "\n".join(lines)

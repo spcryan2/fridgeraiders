@@ -2,7 +2,8 @@ import mockScan from "../mock/mockScan.json";
 import mockMeal from "../mock/mockMeal.json";
 import { resizeImage } from "../utils/resizeImage.js";
 
-const USE_MOCK = import.meta.env.VITE_USE_MOCK === "true";
+const MOCK_SCAN = import.meta.env.VITE_MOCK_SCAN === "true";
+const MOCK_MEAL = import.meta.env.VITE_MOCK_MEAL === "true";
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 async function request(url, options) {
@@ -23,7 +24,7 @@ async function request(url, options) {
 }
 
 export async function scanPhotos(files) {
-  if (USE_MOCK) {
+  if (MOCK_SCAN) {
     await sleep(1500);
     return structuredClone(mockScan);
   }
@@ -34,11 +35,19 @@ export async function scanPhotos(files) {
   for (const file of resized) {
     formData.append("photos", file);
   }
-  return request("/api/scan", { method: "POST", body: formData });
+  const data = await request("/api/scan", { method: "POST", body: formData });
+
+  // older backend sent plain strings, so turn any of those into chip objects
+  const ingredients = (data.ingredients || []).map((item) =>
+    typeof item === "string"
+      ? { name: item, quantity: "", category: "other", confidence: "high" }
+      : item,
+  );
+  return { ingredients };
 }
 
 export async function getMeal(payload) {
-  if (USE_MOCK) {
+  if (MOCK_MEAL) {
     await sleep(1500);
     const meal = structuredClone(mockMeal);
     if (payload.mode === "classic") meal.pairing = null;

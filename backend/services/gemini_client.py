@@ -4,12 +4,15 @@ from google.genai import types
 from config import GEMINI_API_KEY, GEMINI_MODEL, GEMINI_FALLBACK_MODEL, MOCK_GEMINI
 from prompts import load_prompt
 from schemas.ingredient_schema import IngredientList
-from schemas.recipe_schema import RecipeList
+from schemas.recipe_schema import Recipe
+import json
 import time
+from pathlib import Path
 
 from google.genai import errors
 
 SCAN_PROMPT= load_prompt("scan_prompt")
+MOCK_MEAL_PATH = Path(__file__).resolve().parents[2] / "frontend" / "src" / "mock" / "mockMeal.json"
 client = genai.Client(
     api_key=GEMINI_API_KEY,
     http_options=types.HttpOptions(timeout=30_000),   # milliseconds = 30 seconds
@@ -53,72 +56,21 @@ def analyse_image(image_bytes: bytes, mime_type:str)->list[str]:
                  cleaned.append(name)
     return cleaned
 
-def generate_recipes(prompt: str):
+
+def generate_meal(prompt: str) -> dict:
     if MOCK_GEMINI:
-        return {
-  "title": "Chorizo and apple fried rice with pesto yogurt",
-  "summary": "A quick fried rice that uses up the leftover rice and spinach, with a cool pesto yogurt on top.",
-  "servings": 2,
-  "time_minutes": 20,
-  "difficulty": "easy",
-  "ingredients_used": [
-    { "name": "cooked rice", "amount": "1 tub" },
-    { "name": "chorizo", "amount": "half a ring" },
-    { "name": "apple", "amount": "1" },
-    { "name": "spinach", "amount": "2 handfuls" },
-    { "name": "eggs", "amount": "2" },
-    { "name": "red onion", "amount": "1" },
-    { "name": "green pesto", "amount": "1 tbsp" },
-    { "name": "natural yogurt", "amount": "3 tbsp" }
-  ],
-  "extra_needed": [{ "name": "soy sauce", "amount": "1 tbsp" }],
-  "steps": [
-    {
-      "number": 1,
-      "instruction": "Slice the chorizo and red onion, and cut the apple into small cubes.",
-      "minutes": 4
-    },
-    {
-      "number": 2,
-      "instruction": "Fry the chorizo in a dry pan until it releases its red oil, then add the onion.",
-      "minutes": 4
-    },
-    {
-      "number": 3,
-      "instruction": "Add the apple and rice. Fry on high, stirring, until the rice starts to crisp. Splash in the soy sauce.",
-      "minutes": 6
-    },
-    {
-      "number": 4,
-      "instruction": "Push the rice aside, scramble the eggs in the gap, then stir everything together with the spinach until it wilts.",
-      "minutes": 4
-    },
-    {
-      "number": 5,
-      "instruction": "Stir the pesto into the yogurt and spoon it over the top to serve.",
-      "minutes": 2
-    }
-  ],
-  "pairing": {
-    "items": ["chorizo", "apple", "pesto yogurt"],
-    "reason": "The apple's sharp sweetness cuts through the smoky, fatty chorizo the way a high note cuts through a bass line. The cool pesto yogurt then brings the dish back down, like a rest at the end of a bar."
-  }
-}
+        return json.loads(MOCK_MEAL_PATH.read_text(encoding="utf-8"))
     if client is None:
         raise RuntimeError("GEMINI_API_KEY is not set. Add it to your .env file")
 
     response = _generate_with_retry(
-        contents=[
-            prompt,
-        ],
+        contents=[prompt],
         config=types.GenerateContentConfig(
             response_mime_type="application/json",
-            response_schema=RecipeList,
-            temperature=0.5
+            response_schema=Recipe,
+            temperature=0.7,
         ),
     )
-
-    seen, cleaned = set(), []
-    if response.parsed == None:
-        raise RuntimeError("AI Output failed")
-    return response.parsed.recipes.model_dump()
+    if response.parsed is None:
+        raise ValueError("Gemini sent back a recipe we couldn't read")
+    return response.parsed.model_dump()

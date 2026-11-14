@@ -1,28 +1,32 @@
-from typing import List
-from pydantic import BaseModel, Field
+from typing import List, Optional
 
-class IngredientEntry(BaseModel):
+from pydantic import BaseModel
+
+
+class IngredientAmount(BaseModel):
     name: str
-    amount: str = Field(description="should include units such as '2 tbsp' rather than '2'")
+    amount: str
+
 
 class Step(BaseModel):
     number: int
     instruction: str
     minutes: int
 
+
 class Pairing(BaseModel):
     items: List[str]
     reason: str
 
+
+# matches the /api/meal response in the API contract
 class Recipe(BaseModel):
     title: str
     summary: str
     servings: int
     time_minutes: int
-    ingredients_used: List[IngredientEntry]
-    extra_needed: List[IngredientEntry]
+    difficulty: str
+    ingredients_used: List[IngredientAmount]
+    extra_needed: List[IngredientAmount]
     steps: List[Step]
-    pairing: Pairing
-
-class RecipeList(BaseModel):
-    recipes: List[Recipe]
+    pairing: Optional[Pairing]
