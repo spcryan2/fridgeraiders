@@ -37,12 +37,17 @@ export async function scanPhotos(files) {
   }
   const data = await request("/api/scan", { method: "POST", body: formData });
 
-  // older backend sent plain strings, so turn any of those into chip objects
-  const ingredients = (data.ingredients || []).map((item) =>
-    typeof item === "string"
-      ? { name: item, quantity: "", category: "other", confidence: "high" }
-      : item,
-  );
+  // the backend sends { name, count } (older versions sent plain strings),
+  // so fill in everything a chip needs
+  const ingredients = (data.ingredients || []).map((item) => {
+    if (typeof item === "string") item = { name: item };
+    return {
+      name: item.name,
+      quantity: item.quantity || (item.count ? String(item.count) : ""),
+      category: item.category || "other",
+      confidence: item.confidence || "high",
+    };
+  });
   return { ingredients };
 }
 

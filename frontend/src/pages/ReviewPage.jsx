@@ -38,7 +38,9 @@ function ReviewPage({ ingredients, onChange, onComposed, onBack }) {
           .filter((item) => item.name.trim())
           .map((item) => ({
             name: item.name.trim(),
-            quantity: item.quantity,
+            quantity: item.quantity || "",
+            category: item.category || "other",
+            confidence: item.confidence || "high",
             use_first: Boolean(item.use_first),
           })),
         mode,

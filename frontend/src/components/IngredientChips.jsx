@@ -66,6 +66,7 @@ function IngredientChips({ ingredients, onChange }) {
                   updateItem(i, { name: e.target.value, confidence: "high" })
                 }
                 style={{ width: `${Math.max(item.name.length, 3) + 0.5}ch` }}
+                maxLength={40}
                 className="bg-transparent outline-none"
               />
               {item.quantity && (
@@ -93,6 +94,7 @@ function IngredientChips({ ingredients, onChange }) {
           value={newName}
           onChange={(e) => setNewName(e.target.value)}
           placeholder="Add something we missed"
+          maxLength={40}
           className="flex-1 rounded-full bg-white px-4 py-3 ring-1 ring-forest/12 outline-none placeholder:text-forest/40 focus:ring-2 focus:ring-forest"
         />
         <button

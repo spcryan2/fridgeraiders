@@ -65,7 +65,7 @@ def analyse_images(images: list[tuple[bytes, str]]) -> list[dict]:
 
 def generate_recipes(prompt: str):
     if MOCK_GEMINI:
-        return {
+        return {"recipes": [{
   "title": "Chorizo and apple fried rice with pesto yogurt",
   "summary": "A quick fried rice that uses up the leftover rice and spinach, with a cool pesto yogurt on top.",
   "servings": 2,
@@ -113,7 +113,7 @@ def generate_recipes(prompt: str):
     "items": ["chorizo", "apple", "pesto yogurt"],
     "reason": "The apple's sharp sweetness cuts through the smoky, fatty chorizo the way a high note cuts through a bass line. The cool pesto yogurt then brings the dish back down, like a rest at the end of a bar."
   }
-}
+}]}
     if client is None:
         raise RuntimeError("GEMINI_API_KEY is not set. Add it to your .env file")
 
@@ -131,4 +131,4 @@ def generate_recipes(prompt: str):
     seen, cleaned = set(), []
     if response.parsed == None:
         raise RuntimeError("AI Output failed")
-    return response.parsed.recipes.model_dump()
+    return {"recipes": [recipe.model_dump() for recipe in response.parsed.recipes]}

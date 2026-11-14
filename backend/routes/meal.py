@@ -1,11 +1,11 @@
 from flask import Blueprint, jsonify, request
 from services.gemini_client import generate_recipes
 from google.genai import errors
+from prompts import load_prompt
 
 meal_bp = Blueprint('meal', __name__)
 
-with open("../prompts/meal_prompt.txt", encoding="utf-8") as f:
-    MEAL_PROMPT_TEMPLATE = f.read()
+MEAL_PROMPT_TEMPLATE = load_prompt("meal_prompt")
 
 def ingredients_validation(data):
     if not data:
@@ -57,7 +57,8 @@ def constraints_validation(data):
 
     diet = data.get("diet")
     allowed_diets = ["vegetarian", "vegan", "pescatarian", "gluten-free", "dairy-free"]
-    if diet is not None and diet not in allowed_diets:
+    diets = diet if isinstance(diet, list) else [diet]  # frontend sends a list
+    if diet is not None and any(d not in allowed_diets for d in diets):
         return "diet must be one of: " + ", ".join(allowed_diets)
 
     equipment = data.get("equipment")
@@ -73,6 +74,49 @@ def constraints_validation(data):
 
     return None
 
+def extra_validation(data):
+    for ingredient in data.get("ingredients"):
+        use_first = ingredient.get("use_first")
+        if use_first is not None and not isinstance(use_first, bool):
+            return "use_first must be true or false"
+    return None
+
+def recipe_validation(recipe, data):
+    """Sanity checks on the recipe Gemini sends back. Returns an error message,
+    or None if it's fine. Small problems get fixed in place instead."""
+    if not isinstance(recipe, dict):
+        return "the recipe came back in the wrong shape"
+    title = recipe.get("title")
+    if not isinstance(title, str) or not title.strip():
+        return "no recipe could be made from your selection."
+    steps = recipe.get("steps")
+    if not isinstance(steps, list) or not steps:
+        return "no recipe could be made from your selection."
+    for number, step in enumerate(steps, start=1):
+        if not isinstance(step, dict):
+            return "a recipe step came back in the wrong shape"
+        instruction = step.get("instruction")
+        if not isinstance(instruction, str) or not instruction.strip():
+            return "a recipe step was empty"
+        minutes = step.get("minutes")
+        if isinstance(minutes, bool) or not isinstance(minutes, int) or minutes < 0:
+            return "a recipe step had an invalid time"
+        step["number"] = number  # keep steps numbered 1, 2, 3...
+    if not isinstance(recipe.get("ingredients_used"), list) or not isinstance(recipe.get("extra_needed"), list):
+        return "the recipe ingredients came back in the wrong shape"
+
+    # the prompt says time_minutes is the sum of the steps, so make it true
+    recipe["time_minutes"] = sum(step["minutes"] for step in steps)
+    max_minutes = data.get("max_minutes")
+    if max_minutes and recipe["time_minutes"] > max_minutes:
+        return "couldn't fit a recipe into {} minutes. Try a longer time limit.".format(max_minutes)
+
+    if not recipe.get("difficulty"):
+        recipe["difficulty"] = "easy"
+    if data.get("mode") == "classic":
+        recipe["pairing"] = None  # classic mode has no composer pairing
+    return None
+
 @meal_bp.post("/api/meal")
 def meal():
     data = request.get_json(silent=True)
@@ -80,6 +124,8 @@ def meal():
     error = ingredients_validation(data)
     if not error:
         error = constraints_validation(data)
+    if not error:
+        error = extra_validation(data)
     if error:
         return jsonify(error=error), 400
 
@@ -111,7 +157,12 @@ def meal():
     if not output.get("recipes"):
         return jsonify(error="no recipe could be made from your selection."), 422
 
-    return jsonify(output=output), 200
+    recipe = output["recipes"][0]
+    error = recipe_validation(recipe, data)
+    if error:
+        return jsonify(error=error), 422
+
+    return jsonify(recipe), 200
 
 def ingredients_to_string(data):
     lines = []
@@ -132,6 +183,9 @@ def ingredients_to_string(data):
         if confidence and confidence.strip():
             details.append("confidence: " + confidence.strip())
 
+        if ingredient.get("use_first"):
+            details.append("use this up first")
+
         if details:
             line += " (" + ", ".join(details) + ")"
 
@@ -145,7 +199,8 @@ def constraints_to_string(data):
 
     if data.get("diet"):
         lines.append(
-            "every recipe must be {}. Do not include any recipes that would break this diet under any circumstance".format(data['diet']))
+            "every recipe must be {}. Do not include any recipes that would break this diet under any circumstance".format(
+                ", ".join(data['diet']) if isinstance(data['diet'], list) else data['diet']))
     if data.get("max_minutes"):
         lines.append("the total time (including prep and cooking) must be no more than {} minutes".format(data['max_minutes']))
     if data.get("servings"):
