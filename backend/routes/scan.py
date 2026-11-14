@@ -8,10 +8,10 @@ scan_bp = Blueprint("scan",__name__)
 def scan():
     file = request.files.get("image")
     if file is None:
-        return jsonify(error="no image uploaded."), 400
+        return jsonify(error="no photos uploaded."), 400
 
-    mime_type = file.mime_type or ""
-    if not mime_type.startwith("image/"):
+    mime_type = file.mimetype or ""
+    if not mime_type.startswith("image/"):
         return jsonify(error="that file is not an image."), 400
 
     try:
