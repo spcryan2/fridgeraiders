@@ -9,7 +9,10 @@ import time
 from google.genai import errors
 
 SCAN_PROMPT= load_prompt("scan_prompt")
-client = genai.Client(api_key=GEMINI_API_KEY) if GEMINI_API_KEY else None
+client = genai.Client(
+    api_key=GEMINI_API_KEY,
+    http_options=types.HttpOptions(timeout=30_000),   # milliseconds = 30 seconds
+) if GEMINI_API_KEY else None
 
 def _generate_with_retry(contents, config, attempts=5):
     models = [GEMINI_MODEL, GEMINI_FALLBACK_MODEL]
