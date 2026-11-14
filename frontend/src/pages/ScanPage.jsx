@@ -2,14 +2,15 @@ import { useState } from "react";
 import PhotoUpload from "../components/PhotoUpload.jsx";
 import { scanPhotos } from "../api/client.js";
 import LoadingState from "../components/LoadingState.jsx";
+import Logo from "../components/Logo.jsx";
 
 const SCAN_MESSAGES = [
-  "Opening the fridge...",
-  "Reading the labels...",
-  "Tuning the ingredients...",
+  "Casing the fridge...",
+  "Counting the loot...",
+  "Checking for witnesses...",
 ];
 
-function ScanPage({ onScanned }) {
+function ScanPage({ onScanned, onOpenBoard }) {
   const [photos, setPhotos] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -28,25 +29,13 @@ function ScanPage({ onScanned }) {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-9">
       {loading && <LoadingState messages={SCAN_MESSAGES} />}
 
       <header className="pt-12 text-center motion-safe:animate-rise">
-        <p className="text-xs font-semibold tracking-[0.3em] text-accent uppercase">
-          Op. 1 · your fridge
-        </p>
-        <h1 className="mt-3 font-display text-6xl leading-[0.9] font-semibold tracking-tight italic">
-          Leftover
-          <br />
-          Composer
-        </h1>
-        <div className="mx-auto mt-6 flex w-40 items-center gap-3" aria-hidden="true">
-          <span className="h-px flex-1 bg-ink/30" />
-          <span className="font-display text-xl text-accent">♪</span>
-          <span className="h-px flex-1 bg-ink/30" />
-        </div>
-        <p className="mt-4 text-ink-soft">
-          Snap your fridge. We'll compose a meal.
+        <Logo size="lg" tone="dark" />
+        <p className="mt-5 text-sm font-semibold tracking-[0.35em] text-lime-bright uppercase">
+          Snap it. Cook it.
         </p>
       </header>
 
@@ -54,15 +43,26 @@ function ScanPage({ onScanned }) {
         <PhotoUpload photos={photos} onChange={setPhotos} />
       </div>
 
-      {error && <p className="text-center text-sm text-accent">⚠ {error}</p>}
+      {error && (
+        <p className="rounded-2xl bg-tomato/25 px-4 py-3 text-center text-sm text-cream">
+          Raid foiled: {error}
+        </p>
+      )}
 
       <button
         onClick={handleScan}
         disabled={photos.length === 0 || loading}
-        className="w-full rounded-full bg-ink py-4 text-lg font-semibold text-paper transition motion-safe:animate-rise active:scale-[0.98] disabled:opacity-30"
+        className="wordmark w-full rounded-full bg-lime py-5 text-2xl text-forest shadow-[0_5px_0_var(--color-leaf)] transition motion-safe:animate-rise active:translate-y-1 active:shadow-[0_1px_0_var(--color-leaf)] disabled:opacity-30 disabled:shadow-none"
         style={{ animationDelay: "240ms" }}
       >
-        {loading ? "Reading your fridge…" : "Scan ingredients"}
+        {loading ? "Raiding…" : "Scan the loot →"}
+      </button>
+
+      <button
+        onClick={onOpenBoard}
+        className="mx-auto block rounded-full px-5 py-2.5 font-semibold text-lime-bright ring-2 ring-forest-soft transition hover:ring-lime-bright/60 active:scale-95"
+      >
+        Most wanted recipes
       </button>
     </div>
   );

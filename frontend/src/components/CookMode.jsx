@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { playSound } from "../utils/sound.js";
+import RaiderFridge from "./RaiderFridge.jsx";
 
 const RING_RADIUS = 54;
 const RING_LENGTH = 2 * Math.PI * RING_RADIUS;
@@ -46,7 +47,7 @@ function CookMode({ steps, onExit }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 m-0 flex flex-col bg-ink px-6 pt-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] text-paper">
+    <div className="fixed inset-0 z-50 m-0 flex flex-col bg-forest px-6 pt-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] text-white">
       {/* one bar per step, like a row of notes */}
       <div className="flex gap-1.5">
         {steps.map((s, i) => (
@@ -55,27 +56,25 @@ function CookMode({ steps, onExit }) {
             onClick={() => goTo(i)}
             aria-label={`Go to step ${i + 1}`}
             className={`h-1.5 flex-1 rounded-full transition-colors ${
-              i < index ? "bg-paper/60" : i === index ? "bg-accent" : "bg-paper/15"
+              i < index ? "bg-lime" : i === index ? "bg-lime-bright" : "bg-forest-soft"
             }`}
           />
         ))}
       </div>
 
-      <header className="mt-4 flex items-baseline justify-between">
-        <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent">
-          Step {index + 1} <span className="text-paper/40">of {steps.length}</span>
+      <header className="mt-4 flex items-center justify-between">
+        <p className="flex items-center gap-2 text-xs font-semibold tracking-[0.3em] text-lime-bright uppercase">
+          <RaiderFridge variant="lime" className="h-7 w-auto" />
+          Step {index + 1} <span className="text-white/40">of {steps.length}</span>
         </p>
-        <button onClick={onExit} className="text-sm text-paper/50 hover:text-paper">
+        <button onClick={onExit} className="rounded-full px-3 py-1.5 text-sm font-semibold text-white/60 hover:bg-white/10 hover:text-white">
           ✕ Exit
         </button>
       </header>
 
-      {/* faint stave lines behind the step */}
-      <div className="stave pointer-events-none absolute inset-x-0 top-1/4 h-1/2 opacity-60 [--stave-ink:rgb(243_236_223/0.07)]" aria-hidden="true" />
-
       {/* key makes the step fade in fresh each time it changes */}
       <div key={index} className="relative motion-safe:animate-step-in flex flex-1 flex-col justify-center gap-8">
-        <p className="font-display text-4xl font-medium leading-tight sm:text-5xl">
+        <p className="text-3xl leading-snug font-semibold sm:text-4xl">
           {step.instruction}
         </p>
 
@@ -83,7 +82,7 @@ function CookMode({ steps, onExit }) {
           <div className="flex items-center gap-6">
             <div className="relative h-32 w-32 shrink-0">
               <svg viewBox="0 0 120 120" className="h-full w-full -rotate-90">
-                <circle cx="60" cy="60" r={RING_RADIUS} fill="none" strokeWidth="8" className="stroke-paper/10" />
+                <circle cx="60" cy="60" r={RING_RADIUS} fill="none" strokeWidth="8" className="stroke-forest-soft" />
                 <circle
                   cx="60"
                   cy="60"
@@ -94,13 +93,13 @@ function CookMode({ steps, onExit }) {
                   strokeDasharray={RING_LENGTH}
                   strokeDashoffset={RING_LENGTH * (1 - secondsLeft / totalSeconds)}
                   className={`transition-[stroke-dashoffset] duration-1000 ease-linear ${
-                    done ? "stroke-ochre" : "stroke-accent"
+                    done ? "stroke-cream" : "stroke-lime-bright"
                   }`}
                 />
               </svg>
               <span
                 className={`absolute inset-0 flex items-center justify-center text-2xl font-bold tabular-nums ${
-                  done ? "animate-pulse text-ochre" : ""
+                  done ? "animate-pulse text-cream" : ""
                 }`}
               >
                 {done ? "Done!" : formatTime(secondsLeft)}
@@ -111,13 +110,13 @@ function CookMode({ steps, onExit }) {
               <button
                 onClick={() => setRunning(!running)}
                 disabled={done}
-                className="rounded-full bg-accent px-6 py-2.5 font-semibold shadow-lg shadow-accent/30 active:scale-95 disabled:opacity-40"
+                className="rounded-full bg-lime px-6 py-2.5 font-bold text-forest shadow-[0_4px_0_var(--color-leaf)] active:translate-y-1 active:shadow-none disabled:opacity-40"
               >
                 {running ? "❚❚ Pause" : "▶ Start"}
               </button>
               <button
                 onClick={() => goTo(index)}
-                className="rounded-full px-6 py-2 text-sm text-paper/60 hover:text-paper"
+                className="rounded-full px-6 py-2 text-sm text-white/60 hover:text-white"
               >
                 ↺ Reset
               </button>
@@ -127,7 +126,7 @@ function CookMode({ steps, onExit }) {
       </div>
 
       {nextStep && (
-        <p className="mb-4 truncate text-sm text-paper/40">
+        <p className="mb-4 truncate text-sm text-white/45">
           Up next: {nextStep.instruction}
         </p>
       )}
@@ -136,15 +135,15 @@ function CookMode({ steps, onExit }) {
         <button
           onClick={() => goTo(index - 1)}
           disabled={index === 0}
-          className="rounded-full border border-paper/20 py-4 text-lg active:scale-95 disabled:opacity-30"
+          className="rounded-full border-2 border-forest-soft py-4 text-lg active:scale-95 disabled:opacity-30"
         >
           ←
         </button>
         <button
           onClick={() => (isLast ? onExit() : goTo(index + 1))}
-          className="rounded-full bg-paper py-4 text-lg font-semibold text-ink active:scale-95"
+          className="wordmark rounded-full bg-lime py-4 text-xl text-forest shadow-[0_4px_0_var(--color-leaf)] active:translate-y-1 active:shadow-none"
         >
-          {isLast ? "Bravo ♪" : "Next step →"}
+          {isLast ? "Job done! ★" : "Next step →"}
         </button>
       </div>
     </div>
