@@ -1,10 +1,16 @@
 import json
+import os
 import sqlite3
 from contextlib import closing
 from datetime import date, timedelta
 from pathlib import Path
 
-DB_PATH = Path(__file__).resolve().parent.parent / "fridge_raiders.db"
+# Vercel's filesystem is read-only except /tmp, and /tmp is wiped on cold starts,
+# so on Vercel the database is temporary. Locally it stays next to the backend.
+if os.getenv("VERCEL"):
+    DB_PATH = Path("/tmp/fridge_raiders.db")
+else:
+    DB_PATH = Path(__file__).resolve().parent.parent / "fridge_raiders.db"
 
 def get_connection():
     conn = sqlite3.connect(DB_PATH)
