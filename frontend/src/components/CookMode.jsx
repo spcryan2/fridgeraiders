@@ -13,7 +13,7 @@ function formatTime(seconds) {
   return `${mins}:${secs}`;
 }
 
-function CookMode({ steps, title, onExit }) {
+function CookMode({ steps, title, onExit, onFinish }) {
   const [index, setIndex] = useState(0);
   const [secondsLeft, setSecondsLeft] = useState((steps[0].minutes || 0) * 60);
   const [running, setRunning] = useState(false);
@@ -45,6 +45,33 @@ function CookMode({ steps, title, onExit }) {
     }
   }, [running, secondsLeft]);
 
+  // keep the phone screen on while cooking
+useEffect(() => {
+  let lock = null;
+
+  async function requestLock() {
+    try {
+      lock = await navigator.wakeLock?.request("screen");
+    } catch {
+      // not supported, or battery saver is on: the app still works, the screen just may dim
+    }
+  }
+
+  // the browser drops the lock if you switch apps, so grab it again when you come back
+  function handleVisibility() {
+    if (document.visibilityState === "visible") requestLock();
+  }
+
+  requestLock();
+  document.addEventListener("visibilitychange", handleVisibility);
+
+  // runs when cook mode closes: let the screen sleep normally again
+  return () => {
+    document.removeEventListener("visibilitychange", handleVisibility);
+    lock?.release();
+  };
+}, []);
+  
   function goTo(i) {
     setIndex(i);
     setSecondsLeft((steps[i].minutes || 0) * 60);
@@ -215,7 +242,7 @@ function CookMode({ steps, title, onExit }) {
           ←
         </button>
         <button
-          onClick={() => (isLast ? onExit() : goTo(index + 1))}
+          onClick={() => (isLast ? onFinish() : goTo(index + 1))}
           className="wordmark rounded-full bg-lime py-4 text-xl text-forest shadow-[0_4px_0_var(--color-leaf)] active:translate-y-1 active:shadow-none"
         >
           {isLast ? "Job done! ★" : "Next step →"}

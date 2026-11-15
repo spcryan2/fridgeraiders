@@ -3,6 +3,7 @@ import PhotoUpload from "../components/PhotoUpload.jsx";
 import { scanPhotos } from "../api/client.js";
 import LoadingState from "../components/LoadingState.jsx";
 import Logo from "../components/Logo.jsx";
+import { getRescued } from "../utils/rescued.js";
 
 const SCAN_MESSAGES = [
   "Casing the fridge...",
@@ -14,6 +15,7 @@ function ScanPage({ onScanned, onOpenBoard }) {
   const [photos, setPhotos] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [rescued] = useState(getRescued);
 
   async function handleScan() {
     setLoading(true);
@@ -38,6 +40,12 @@ function ScanPage({ onScanned, onOpenBoard }) {
           Snap it. Cook it.
         </p>
       </header>
+
+      {rescued > 0 && (
+        <p className="text-center text-sm font-semibold text-lime-bright motion-safe:animate-rise">
+          🌱 {rescued} {rescued === 1 ? "ingredient" : "ingredients"} rescued from the bin
+       </p>
+      )}
 
       <div className="motion-safe:animate-rise" style={{ animationDelay: "120ms" }}>
         <PhotoUpload photos={photos} onChange={setPhotos} />

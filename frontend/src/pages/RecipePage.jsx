@@ -54,6 +54,10 @@ function RecipePage({ recipe, from, onRecipeChange, onBack, onStartOver, onOpenB
           steps={recipe.steps}
           title={recipe.title}
           onExit={() => setCooking(false)}
+          onFinish={()=>{
+            addRescued(recipe.ingredients_used.length);
+            setCooking(false);
+          }}
         />
       )}
 
