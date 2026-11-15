@@ -22,7 +22,9 @@ function PhotoUpload({ photos, onChange }) {
 
   return (
     <div className="space-y-5">
-      <label className="group block w-full cursor-pointer rounded-3xl border-2 border-dashed border-lime-bright/50 bg-forest-soft px-6 py-9 text-center transition hover:border-lime-bright">
+      <label 
+        data-sound="pop" 
+        className="group block w-full cursor-pointer rounded-3xl border-2 border-dashed border-lime-bright/50 bg-forest-soft px-6 py-9 text-center transition hover:border-lime-bright">
         <span className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-lime text-4xl font-bold text-forest shadow-[0_4px_0_var(--color-leaf)] transition group-hover:scale-105 group-active:translate-y-1 group-active:shadow-none">
           +
         </span>

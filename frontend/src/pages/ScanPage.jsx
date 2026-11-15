@@ -50,6 +50,7 @@ function ScanPage({ onScanned, onOpenBoard }) {
       )}
 
       <button
+        data-sound="pop"
         onClick={handleScan}
         disabled={photos.length === 0 || loading}
         className="wordmark w-full rounded-full bg-lime py-5 text-2xl text-forest shadow-[0_5px_0_var(--color-leaf)] transition motion-safe:animate-rise active:translate-y-1 active:shadow-[0_1px_0_var(--color-leaf)] disabled:opacity-30 disabled:shadow-none"
@@ -59,6 +60,7 @@ function ScanPage({ onScanned, onOpenBoard }) {
       </button>
 
       <button
+        data-sound="pop"
         onClick={onOpenBoard}
         className="mx-auto block rounded-full px-5 py-2.5 font-semibold text-lime-bright ring-2 ring-forest-soft transition hover:ring-lime-bright/60 active:scale-95"
       >

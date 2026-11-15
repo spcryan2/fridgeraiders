@@ -12,6 +12,7 @@ function RecipePage({ recipe, from, onRecipeChange, onBack, onStartOver, onOpenB
     <div className="space-y-6 pb-8">
       <header className="flex items-center justify-between pt-6">
         <button
+          data-sound="pop"
           onClick={onBack}
           className="rounded-full px-3 py-1.5 text-sm font-semibold text-forest/60 hover:bg-forest/5 hover:text-forest"
         >
@@ -28,6 +29,7 @@ function RecipePage({ recipe, from, onRecipeChange, onBack, onStartOver, onOpenB
         <div>
           <p className="wordmark text-lg">Good raid?</p>
           <button
+            data-sound="pop"
             onClick={onOpenBoard}
             className="text-sm font-semibold whitespace-nowrap text-leaf hover:underline"
           >
@@ -53,12 +55,14 @@ function RecipePage({ recipe, from, onRecipeChange, onBack, onStartOver, onOpenB
 
       <div className="grid grid-cols-2 gap-3">
         <button
+          data-sound="pop"
           onClick={onBack}
           className="rounded-full bg-white py-3.5 font-semibold ring-1 ring-forest/15 transition hover:ring-forest/40 active:scale-[0.98]"
         >
           {fromBoard ? "Back to board" : "Try another"}
         </button>
         <button
+          data-sound="pop"
           onClick={onStartOver}
           className="rounded-full bg-white py-3.5 font-semibold ring-1 ring-forest/15 transition hover:ring-forest/40 active:scale-[0.98]"
         >

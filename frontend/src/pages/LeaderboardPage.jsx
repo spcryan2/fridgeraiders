@@ -37,6 +37,7 @@ function LeaderboardPage({ onBack, onOpen }) {
     <div className="space-y-6 pb-8">
       <header className="flex items-center justify-between pt-6">
         <button
+          data-sound="pop"
           onClick={onBack}
           className="rounded-full px-3 py-1.5 text-sm font-semibold text-forest/60 hover:bg-forest/5 hover:text-forest"
         >
@@ -66,6 +67,7 @@ function LeaderboardPage({ onBack, onOpen }) {
         <div className="space-y-3 rounded-3xl bg-white p-6 text-center ring-1 ring-forest/10">
           <p className="text-tomato">Couldn't load the board: {error}</p>
           <button
+            data-sound="pop"
             onClick={retry}
             className="rounded-full bg-forest px-5 py-2 font-semibold text-cream"
           >
@@ -82,6 +84,7 @@ function LeaderboardPage({ onBack, onOpen }) {
             Make a recipe and upvote it to put it on the board.
           </p>
           <button
+            data-sound="pop"
             onClick={onBack}
             className="wordmark rounded-full bg-lime px-6 py-3 text-xl text-forest shadow-[0_4px_0_var(--color-leaf)]"
           >
@@ -124,6 +127,7 @@ function LeaderboardPage({ onBack, onOpen }) {
 
               <div className="flex items-center justify-between gap-3">
                 <button
+                  data-sound="pop"
                   onClick={() => onOpen(recipe)}
                   className="rounded-full px-1 font-semibold text-leaf hover:underline"
                 >

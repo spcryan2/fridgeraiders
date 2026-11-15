@@ -66,6 +66,7 @@ function ReviewPage({ ingredients, onChange, onComposed, onBack }) {
 
       <header className="flex items-center justify-between pt-6">
         <button
+          data-sound="pop"
           onClick={onBack}
           className="rounded-full px-3 py-1.5 text-sm font-semibold text-forest/60 hover:bg-forest/5 hover:text-forest"
         >
@@ -93,6 +94,7 @@ function ReviewPage({ ingredients, onChange, onComposed, onBack }) {
         <div className="grid grid-cols-2 gap-3">
           {MODES.map((option) => (
             <button
+              data-sound="pop"
               key={option.value}
               onClick={() => setMode(option.value)}
               aria-pressed={mode === option.value}
@@ -122,6 +124,7 @@ function ReviewPage({ ingredients, onChange, onComposed, onBack }) {
       )}
 
       <button
+        data-sound="pop"
         onClick={handleCompose}
         disabled={ingredients.length === 0 || loading}
         className="wordmark w-full rounded-full bg-lime py-5 text-2xl text-forest shadow-[0_5px_0_var(--color-leaf)] transition active:translate-y-1 active:shadow-[0_1px_0_var(--color-leaf)] disabled:opacity-30 disabled:shadow-none"

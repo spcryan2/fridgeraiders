@@ -42,6 +42,7 @@ function UpvoteButton({ recipe, onChange, tone = "light" }) {
     <div className="flex flex-col items-end gap-1">
       <button
         type="button"
+        data-sound="ding"
         onClick={handleVote}
         disabled={busy || voted}
         aria-pressed={voted}
