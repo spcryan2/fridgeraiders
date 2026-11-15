@@ -3,6 +3,8 @@ import PhotoUpload from "../components/PhotoUpload.jsx";
 import { scanPhotos } from "../api/client.js";
 import LoadingState from "../components/LoadingState.jsx";
 import Logo from "../components/Logo.jsx";
+import Flame from "../components/Flame.jsx";
+import BadgeShelf from "../components/BadgeShelf.jsx";
 import { getRescued } from "../utils/rescued.js";
 
 const SCAN_MESSAGES = [
@@ -11,7 +13,7 @@ const SCAN_MESSAGES = [
   "Checking for witnesses...",
 ];
 
-function ScanPage({ onScanned, onOpenBoard }) {
+function ScanPage({ user, onScanned, onOpenBoard, onLogIn, onLogOut }) {
   const [photos, setPhotos] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -34,7 +36,25 @@ function ScanPage({ onScanned, onOpenBoard }) {
     <div className="space-y-9">
       {loading && <LoadingState messages={SCAN_MESSAGES} />}
 
-      <header className="pt-12 text-center motion-safe:animate-rise">
+      <div className="flex items-center justify-between pt-5 text-sm">
+        {user ? (
+          <>
+            <span className="flex items-center gap-1.5 font-semibold">
+              <Flame className="h-4 w-4 text-lime-bright" />
+              {user.streak}-night streak · {user.raider_name}
+            </span>
+            <button onClick={onLogOut} className="text-cream/60 hover:text-cream">
+              Log out
+            </button>
+          </>
+        ) : (
+          <button onClick={onLogIn} className="font-semibold text-lime-bright hover:underline">
+            Log in to start a streak →
+          </button>
+        )}
+      </div>
+
+      <header className="pt-6 text-center motion-safe:animate-rise">
         <Logo size="lg" tone="dark" />
         <p className="mt-5 text-sm font-semibold tracking-[0.35em] text-lime-bright uppercase">
           Snap it. Cook it.
@@ -74,6 +94,8 @@ function ScanPage({ onScanned, onOpenBoard }) {
       >
         Most wanted recipes
       </button>
+
+      <BadgeShelf user={user} />
     </div>
   );
 }

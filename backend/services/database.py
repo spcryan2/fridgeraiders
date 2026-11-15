@@ -1,6 +1,7 @@
 import json
 import sqlite3
 from contextlib import closing
+from datetime import date, timedelta
 from pathlib import Path
 
 DB_PATH = Path(__file__).resolve().parent.parent / "fridge_raiders.db"
@@ -20,6 +21,21 @@ def init_db():
                 data       TEXT NOT NULL,
                 upvotes    INTEGER NOT NULL DEFAULT 0,
                 created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+            )
+            """
+        )
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS users (
+                id             INTEGER PRIMARY KEY AUTOINCREMENT,
+                raider_name    TEXT NOT NULL UNIQUE COLLATE NOCASE,
+                email          TEXT NOT NULL UNIQUE COLLATE NOCASE,
+                password_hash  TEXT NOT NULL,
+                streak         INTEGER NOT NULL DEFAULT 0,
+                best_streak    INTEGER NOT NULL DEFAULT 0,
+                last_raid_date TEXT,
+                grams_rescued  INTEGER NOT NULL DEFAULT 0,
+                created_at     TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
             )
             """
         )
@@ -62,3 +78,72 @@ def upvote_recipe(recipe_id: int):
             "SELECT upvotes FROM recipes WHERE id = ?", (recipe_id,)
         ).fetchone()
         return row["upvotes"]
+
+
+def _user_to_dict(row):
+    today = date.today()
+    last = date.fromisoformat(row["last_raid_date"]) if row["last_raid_date"] else None
+    # a streak only counts if you raided today or yesterday
+    alive = last is not None and today - last <= timedelta(days=1)
+    return {
+        "id": row["id"],
+        "raider_name": row["raider_name"],
+        "email": row["email"],
+        "streak": row["streak"] if alive else 0,
+        "best_streak": row["best_streak"],
+        "raided_today": last == today,
+        "grams_rescued": row["grams_rescued"],
+    }
+
+
+def create_user(raider_name, email, password_hash):
+    """Returns the new user, or None if the name or email is taken."""
+    with closing(get_connection()) as conn:
+        try:
+            cursor = conn.execute(
+                "INSERT INTO users (raider_name, email, password_hash) VALUES (?, ?, ?)",
+                (raider_name, email, password_hash),
+            )
+        except sqlite3.IntegrityError:
+            return None
+        conn.commit()
+        row = conn.execute("SELECT * FROM users WHERE id = ?", (cursor.lastrowid,)).fetchone()
+        return _user_to_dict(row)
+
+
+def find_login(email):
+    """Returns (user, password_hash), or (None, None) if there's no such email."""
+    with closing(get_connection()) as conn:
+        row = conn.execute("SELECT * FROM users WHERE email = ?", (email,)).fetchone()
+    if row is None:
+        return None, None
+    return _user_to_dict(row), row["password_hash"]
+
+
+def get_user(user_id):
+    with closing(get_connection()) as conn:
+        row = conn.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
+    return _user_to_dict(row) if row else None
+
+
+def record_raid(user_id, grams):
+    """Bumps the streak once a day and adds the rescued grams."""
+    today = date.today()
+    with closing(get_connection()) as conn:
+        row = conn.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
+        if row is None:
+            return None
+        last = date.fromisoformat(row["last_raid_date"]) if row["last_raid_date"] else None
+        if last == today:
+            streak = row["streak"]
+        elif last == today - timedelta(days=1):
+            streak = row["streak"] + 1
+        else:
+            streak = 1
+        conn.execute(
+            """UPDATE users SET streak = ?, best_streak = MAX(best_streak, ?),
+               last_raid_date = ?, grams_rescued = grams_rescued + ? WHERE id = ?""",
+            (streak, streak, today.isoformat(), grams, user_id),
+        )
+        conn.commit()
+    return get_user(user_id)
