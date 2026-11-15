@@ -14,10 +14,16 @@ class Pairing(BaseModel):
     items: List[str]
     reason: str
 
+class Nutrition(BaseModel):
+    calories: int
+    protein: int
+
 class Recipe(BaseModel):
     title: str
     summary: str
     servings: int
+    nutrition: List[Nutrition]
+    category: str
     time_minutes: int
     difficulty: str = Field(description="one of: easy, medium, hard")
     ingredients_used: List[IngredientEntry]
