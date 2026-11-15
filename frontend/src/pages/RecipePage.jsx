@@ -3,9 +3,10 @@ import RecipeCard from "../components/RecipeCard.jsx";
 import CookMode from "../components/CookMode.jsx";
 import Logo from "../components/Logo.jsx";
 import UpvoteButton from "../components/UpvoteButton.jsx";
-import WasteSaved from "../components/WasteSaved.jsx";
 import { estimateRescue, readTally, recordRescue } from "../utils/waste.js";
 import { recordRaid } from "../api/client.js";
+import { newBadges } from "../utils/badges.js";
+import BadgeUnlocked from "../components/BadgeUnlocked.jsx";
 
 function RecipePage({
   recipe,
@@ -19,6 +20,7 @@ function RecipePage({
 }) {
   const [cooking, setCooking] = useState(false);
   const [tally, setTally] = useState(readTally);
+  const [unlocked, setUnlocked] = useState([]);
   const fromBoard = from === "leaderboard";
 
   return (
@@ -52,17 +54,20 @@ function RecipePage({
         <UpvoteButton recipe={recipe} onChange={onRecipeChange} />
       </div>
 
-      <WasteSaved recipe={recipe} tally={tally} />
-
       {recipe.steps.length > 0 && (
         <button
           data-sound="pop"
           onClick={() => {
             const next = recordRescue(recipe);
-            // only tell the server about a new raid, not a re-cook of the same recipe
-            if (user && next.raids.length > tally.raids.length) {
-              recordRaid(estimateRescue(recipe.ingredients_used).grams)
-                .then(onUserChange)
+            if (user) {
+              // the streak counts every day you cook; grams only count once per recipe
+              const isNew = next.raids.length > tally.raids.length;
+              recordRaid(isNew ? estimateRescue(recipe.ingredients_used).grams : 0)
+                .then((updated) => {
+                  onUserChange(updated);
+                  const fresh = newBadges(user, updated);
+                  if (fresh.length > 0) setUnlocked(fresh);
+                })
                 .catch(() => {});
             }
             setTally(next);
@@ -80,6 +85,10 @@ function RecipePage({
           title={recipe.title}
           onExit={() => setCooking(false)}
         />
+      )}
+
+      {unlocked.length > 0 && (
+        <BadgeUnlocked badges={unlocked} onClose={() => setUnlocked([])} />
       )}
 
       <div className="grid grid-cols-2 gap-3">

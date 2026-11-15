@@ -4,6 +4,7 @@ import { scanPhotos } from "../api/client.js";
 import LoadingState from "../components/LoadingState.jsx";
 import Logo from "../components/Logo.jsx";
 import Flame from "../components/Flame.jsx";
+import BadgeShelf from "../components/BadgeShelf.jsx";
 
 const SCAN_MESSAGES = [
   "Casing the fridge...",
@@ -83,6 +84,8 @@ function ScanPage({ user, onScanned, onOpenBoard, onLogIn, onLogOut }) {
       >
         Most wanted recipes
       </button>
+
+      <BadgeShelf user={user} />
     </div>
   );
 }

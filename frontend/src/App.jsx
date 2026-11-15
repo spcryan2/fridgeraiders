@@ -14,6 +14,13 @@ function App() {
   // which screen the recipe was opened from, so "back" goes to the right place
   const [recipeFrom, setRecipeFrom] = useState("review");
 
+  const dark = ["scan", "auth", "loading"].includes(screen);
+
+  // colour the page behind the app too, so scrolling past the ends doesn't flash cream
+  useEffect(() => {
+    document.body.style.backgroundColor = dark ? "var(--color-forest)" : "var(--color-cream)";
+  }, [dark]);
+
   // already logged in from last time? go straight to scanning
   useEffect(() => {
     getMe().then((me) => {
@@ -66,7 +73,7 @@ function App() {
   return (
     <div
       className={`min-h-screen ${
-        ["scan", "auth", "loading"].includes(screen) ? "bg-forest text-cream" : "bg-cream text-forest"
+        dark ? "bg-forest text-cream" : "bg-cream text-forest"
       }`}
     >
       <main className="mx-auto max-w-md px-5 pb-12">
