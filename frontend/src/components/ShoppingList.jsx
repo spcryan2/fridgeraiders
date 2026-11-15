@@ -12,11 +12,12 @@ import {
   openWhatsApp,
   formatPrice,
 } from "../utils/shoppingList.js";
+import ShopMap from "./ShopMap.jsx";
 
 function ShoppingList({ items, title, have = [] }) {
   // older saved recipes may store items as plain strings
   const list = items.map((item) => (typeof item === "string" ? { name: item } : item));
-
+  const [showShops, setShowShops] = useState(false);
   const [checked, setChecked] = useState(() => loadTicks(title)); // #1 names ticked off
   const [swaps, setSwaps] = useState({}); // #3 name -> { found, swap, tip } or { error }
   const [swapping, setSwapping] = useState(null); // name we're asking Gemini about
@@ -174,6 +175,16 @@ function ShoppingList({ items, title, have = [] }) {
       >
         {status || (needed.length ? "＋ Add to my list" : "All got! 🎉")}
       </button>
+      <button
+  data-sound="pop"
+  onClick={() => setShowShops(true)}
+  disabled={needed.length === 0}
+  className="w-full rounded-full bg-lime py-3 font-bold text-forest shadow-[0_4px_0_var(--color-leaf)] transition active:translate-y-1 active:shadow-none disabled:opacity-40"
+>
+  📍 Find a shop near me
+</button>
+
+{showShops && <ShopMap items={needed} onClose={() => setShowShops(false)} />}
     </section>
   );
 }
