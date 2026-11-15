@@ -6,6 +6,8 @@ from prompts import load_prompt
 meal_bp = Blueprint('meal', __name__)
 
 MEAL_PROMPT_TEMPLATE = load_prompt("meal_prompt")
+if "{{CONSTANTS}}" in MEAL_PROMPT_TEMPLATE or "{{CONSTRAINTS}}" in MEAL_PROMPT_TEMPLATE:
+    raise RuntimeError("meal prompt is missing {{INGREDIENTS}} or {{CONSTANTS}}")
 
 def ingredients_validation(data):
     if not data:
@@ -84,19 +86,15 @@ def extra_validation(data):
 def recipe_validation(recipe, data):
     """Sanity checks on the recipe Gemini sends back. Returns an error message,
     or None if it's fine. Small problems get fixed in place instead."""
-    if not isinstance(recipe, dict):
-        return "the recipe came back in the wrong shape"
     title = recipe.get("title")
-    if not isinstance(title, str) or not title.strip():
+    if not title.strip():
         return "no recipe could be made from your selection."
     steps = recipe.get("steps")
-    if not isinstance(steps, list) or not steps:
+    if not steps:
         return "no recipe could be made from your selection."
     for number, step in enumerate(steps, start=1):
-        if not isinstance(step, dict):
-            return "a recipe step came back in the wrong shape"
         instruction = step.get("instruction")
-        if not isinstance(instruction, str) or not instruction.strip():
+        if not instruction.strip():
             return "a recipe step was empty"
         minutes = step.get("minutes")
         if isinstance(minutes, bool) or not isinstance(minutes, int) or minutes < 0:
@@ -132,6 +130,7 @@ def meal():
     ingredients = ingredients_to_string(data)
     constraints = constraints_to_string(data)
 
+
     prompt = MEAL_PROMPT_TEMPLATE.replace("{{CONSTRAINTS}}", constraints)
     prompt = prompt.replace("{{INGREDIENTS}}", ingredients)
 
@@ -149,18 +148,17 @@ def meal():
         print(e)
         return jsonify(error="Something went wrong generating your recipe."), 500
 
-
-    if not isinstance(output,dict):
-        return jsonify(error="output datatype is incorrect"), 502
-    if not isinstance(output.get("recipes"),list):
-        return jsonify(error="recipes datatype is incorrect"),502
     if not output.get("recipes"):
         return jsonify(error="no recipe could be made from your selection."), 422
+
 
     recipe = output["recipes"][0]
     error = recipe_validation(recipe, data)
     if error:
         return jsonify(error=error), 422
+
+    if data.get("servings") and recipe["servings"] != data["servings"]:
+        return jsonify(error="Serving size mismatch"), 502
 
     return jsonify(recipe), 200
 
