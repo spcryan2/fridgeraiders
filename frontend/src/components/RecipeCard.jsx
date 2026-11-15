@@ -1,5 +1,6 @@
 import SectionHeading from "./SectionHeading.jsx";
 import FlavourMix from "./FlavourMix.jsx";
+import ShoppingList from "./ShoppingList.jsx";
 
 function formatExtra(item) {
   if (typeof item === "string") return item;

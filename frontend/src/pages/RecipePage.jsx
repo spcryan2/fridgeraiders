@@ -3,6 +3,7 @@ import RecipeCard from "../components/RecipeCard.jsx";
 import CookMode from "../components/CookMode.jsx";
 import Logo from "../components/Logo.jsx";
 import UpvoteButton from "../components/UpvoteButton.jsx";
+import { addRescued } from "../utils/rescued.js";
 
 function RecipePage({ recipe, from, onRecipeChange, onBack, onStartOver, onOpenBoard }) {
   const [cooking, setCooking] = useState(false);
