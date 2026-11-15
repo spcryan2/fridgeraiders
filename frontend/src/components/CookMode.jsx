@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { ConversationProvider } from "@elevenlabs/react";
 import { playSound } from "../utils/sound.js";
 import RaiderFridge from "./RaiderFridge.jsx";
 import VoiceChef from "./VoiceChef.jsx";
