@@ -5,6 +5,7 @@ import LoadingState from "../components/LoadingState.jsx";
 import Logo from "../components/Logo.jsx";
 import Flame from "../components/Flame.jsx";
 import BadgeShelf from "../components/BadgeShelf.jsx";
+import { getRescued } from "../utils/rescued.js";
 
 const SCAN_MESSAGES = [
   "Casing the fridge...",
@@ -16,6 +17,7 @@ function ScanPage({ user, onScanned, onOpenBoard, onLogIn, onLogOut }) {
   const [photos, setPhotos] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [rescued] = useState(getRescued);
 
   async function handleScan() {
     setLoading(true);
@@ -59,6 +61,12 @@ function ScanPage({ user, onScanned, onOpenBoard, onLogIn, onLogOut }) {
         </p>
       </header>
 
+      {rescued > 0 && (
+        <p className="text-center text-sm font-semibold text-lime-bright motion-safe:animate-rise">
+          🌱 {rescued} {rescued === 1 ? "ingredient" : "ingredients"} rescued from the bin
+       </p>
+      )}
+
       <div className="motion-safe:animate-rise" style={{ animationDelay: "120ms" }}>
         <PhotoUpload photos={photos} onChange={setPhotos} />
       </div>
@@ -70,6 +78,7 @@ function ScanPage({ user, onScanned, onOpenBoard, onLogIn, onLogOut }) {
       )}
 
       <button
+        data-sound="pop"
         onClick={handleScan}
         disabled={photos.length === 0 || loading}
         className="wordmark w-full rounded-full bg-lime py-5 text-2xl text-forest shadow-[0_5px_0_var(--color-leaf)] transition motion-safe:animate-rise active:translate-y-1 active:shadow-[0_1px_0_var(--color-leaf)] disabled:opacity-30 disabled:shadow-none"
@@ -79,6 +88,7 @@ function ScanPage({ user, onScanned, onOpenBoard, onLogIn, onLogOut }) {
       </button>
 
       <button
+        data-sound="pop"
         onClick={onOpenBoard}
         className="mx-auto block rounded-full px-5 py-2.5 font-semibold text-lime-bright ring-2 ring-forest-soft transition hover:ring-lime-bright/60 active:scale-95"
       >
