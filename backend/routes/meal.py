@@ -105,7 +105,7 @@ def recipe_validation(recipe, data):
         return "the recipe ingredients came back in the wrong shape"
     for item in recipe["extra_needed"]:
         price= item.get("estimated_price")
-        if isinstance(price, bool) or not 0<= price<= 50:
+        if isinstance(price, bool) or not isinstance(price, (int, float)) or not 0 <= price <= 50:
             item["estimated_price"]=None
         else:
             item["estimated_price"] = round(price,2)
