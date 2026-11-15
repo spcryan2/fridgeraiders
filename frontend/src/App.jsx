@@ -11,7 +11,10 @@ function App() {
   const [screen, setScreen] = useState("loading");
   const [user, setUser] = useState(null);
   const [ingredients, setIngredients] = useState([]);
-  const [recipe, setRecipe] = useState(null);
+  // a raid can come back with a few options (quick, healthy, adventurous)
+  const [recipes, setRecipes] = useState([]);
+  const [selected, setSelected] = useState(0);
+  const recipe = recipes[selected] || null;
   // which screen the recipe was opened from, so "back" goes to the right place
   const [recipeFrom, setRecipeFrom] = useState("review");
 
@@ -46,8 +49,9 @@ function App() {
     setScreen("review");
   }
 
-  function handleComposed(meal) {
-    setRecipe(meal);
+  function handleComposed(meals) {
+    setRecipes(meals);
+    setSelected(0);
     setRecipeFrom("review");
     setScreen("recipe");
   }
@@ -60,15 +64,23 @@ function App() {
     setScreen("leaderboard");
   }
 
+  // swap in an updated copy (e.g. after an upvote), matched by title
+  // so a late reply still lands on the right recipe after switching tabs
+  function handleRecipeChange(updated) {
+    setRecipes((list) => list.map((item) => (item.title === updated.title ? updated : item)));
+  }
+
   function handleOpenFromBoard(saved) {
-    setRecipe(saved);
+    setRecipes([saved]);
+    setSelected(0);
     setRecipeFrom("leaderboard");
     setScreen("recipe");
   }
 
   function handleStartOver() {
     setIngredients([]);
-    setRecipe(null);
+    setRecipes([]);
+    setSelected(0);
     setScreen("scan");
   }
   return (
@@ -99,13 +111,16 @@ function App() {
             onBack={handleStartOver}
           />
         )}
-        {screen === "recipe" && (
+        {screen === "recipe" && recipe && (
           <RecipePage
             recipe={recipe}
+            options={recipes}
+            selected={selected}
+            onSelect={setSelected}
             user={user}
             onUserChange={setUser}
             from={recipeFrom}
-            onRecipeChange={setRecipe}
+            onRecipeChange={handleRecipeChange}
             onBack={handleBackFromRecipe}
             onStartOver={handleStartOver}
             onOpenBoard={handleOpenBoard}

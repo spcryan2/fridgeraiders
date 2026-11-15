@@ -12,7 +12,7 @@ function RecipeCard({ recipe }) {
     <article className="overflow-hidden rounded-[2rem] bg-white ring-1 ring-forest/10 motion-safe:animate-rise">
       <header className="space-y-3 bg-forest px-6 pt-6 pb-7 text-white">
         <p className="text-xs font-semibold tracking-[0.3em] text-lime-bright uppercase">
-          Tonight's getaway meal
+          Tonight's getaway meal{recipe.category ? ` · ${recipe.category}` : ""}
         </p>
         <h2 className="wordmark text-4xl text-white normal-case">
           {recipe.title}
@@ -29,6 +29,17 @@ function RecipeCard({ recipe }) {
             <span className="rounded-full bg-forest-soft px-3 py-1 capitalize">
               {recipe.difficulty}
             </span>
+          )}
+          {recipe.nutrition && (
+            <>
+              <span className="rounded-full bg-forest-soft px-3 py-1">
+                {recipe.nutrition.calories} kcal
+              </span>
+              <span className="rounded-full bg-forest-soft px-3 py-1">
+                {recipe.nutrition.protein}g protein
+              </span>
+              <span className="self-center text-xs font-normal text-white/60">per serving</span>
+            </>
           )}
         </div>
       </header>

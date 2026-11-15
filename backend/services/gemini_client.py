@@ -1,3 +1,5 @@
+from pathlib import Path
+import json
 from google import genai
 from google.genai import types
 
@@ -66,55 +68,9 @@ def analyse_images(images: list[tuple[bytes, str]]) -> list[dict]:
 
 def generate_recipes(prompt: str):
     if MOCK_GEMINI:
-        return {"recipes": [{
-  "title": "Chorizo and apple fried rice with pesto yogurt",
-  "summary": "A quick fried rice that uses up the leftover rice and spinach, with a cool pesto yogurt on top.",
-  "servings": 2,
-  "time_minutes": 20,
-  "difficulty": "easy",
-  "ingredients_used": [
-    { "name": "cooked rice", "amount": "1 tub" },
-    { "name": "chorizo", "amount": "half a ring" },
-    { "name": "apple", "amount": "1" },
-    { "name": "spinach", "amount": "2 handfuls" },
-    { "name": "eggs", "amount": "2" },
-    { "name": "red onion", "amount": "1" },
-    { "name": "green pesto", "amount": "1 tbsp" },
-    { "name": "natural yogurt", "amount": "3 tbsp" }
-  ],
-  "extra_needed": [{ "name": "soy sauce", "amount": "1 tbsp" }],
-  "steps": [
-    {
-      "number": 1,
-      "instruction": "Slice the chorizo and red onion, and cut the apple into small cubes.",
-      "minutes": 4
-    },
-    {
-      "number": 2,
-      "instruction": "Fry the chorizo in a dry pan until it releases its red oil, then add the onion.",
-      "minutes": 4
-    },
-    {
-      "number": 3,
-      "instruction": "Add the apple and rice. Fry on high, stirring, until the rice starts to crisp. Splash in the soy sauce.",
-      "minutes": 6
-    },
-    {
-      "number": 4,
-      "instruction": "Push the rice aside, scramble the eggs in the gap, then stir everything together with the spinach until it wilts.",
-      "minutes": 4
-    },
-    {
-      "number": 5,
-      "instruction": "Stir the pesto into the yogurt and spoon it over the top to serve.",
-      "minutes": 2
-    }
-  ],
-  "pairing": {
-    "items": ["chorizo", "apple", "pesto yogurt"],
-    "reason": "The apple's sharp sweetness cuts through the smoky, fatty chorizo the way a high note cuts through a bass line. The cool pesto yogurt then brings the dish back down, like a rest at the end of a bar."
-  }
-}]}
+        # three sample recipes (quick, healthy, adventurous) in the same shape Gemini returns
+        with open(Path(__file__).with_name("mock_recipes.json")) as f:
+            return json.load(f)
     if client is None:
         raise RuntimeError("GEMINI_API_KEY is not set. Add it to your .env file")
 

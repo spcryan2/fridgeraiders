@@ -1,0 +1,216 @@
+{
+  "recipes": [
+    {
+      "title": "Spinach and cheddar omelette",
+      "summary": "A fluffy omelette that uses up the eggs, spinach and the end of the cheddar.",
+      "servings": 2,
+      "nutrition": {
+        "calories": 390,
+        "protein": 26
+      },
+      "category": "quick",
+      "time_minutes": 10,
+      "difficulty": "easy",
+      "ingredients_used": [
+        {
+          "name": "eggs",
+          "amount": "4"
+        },
+        {
+          "name": "spinach",
+          "amount": "1 handful"
+        },
+        {
+          "name": "cheddar cheese",
+          "amount": "60g"
+        },
+        {
+          "name": "milk",
+          "amount": "2 tbsp"
+        }
+      ],
+      "extra_needed": [
+        {
+          "name": "butter",
+          "amount": "1 knob"
+        }
+      ],
+      "steps": [
+        {
+          "number": 1,
+          "instruction": "Whisk the eggs with the milk and a pinch of salt. Grate the cheddar.",
+          "minutes": 2
+        },
+        {
+          "number": 2,
+          "instruction": "Melt the butter in a frying pan, wilt the spinach, then pour in the eggs and cook until almost set.",
+          "minutes": 6
+        },
+        {
+          "number": 3,
+          "instruction": "Scatter over the cheddar, fold in half and slide onto plates.",
+          "minutes": 2
+        }
+      ],
+      "pairing": {
+        "items": [
+          "cheddar",
+          "spinach"
+        ],
+        "reason": "Sharp, salty cheddar wakes up the mild, slightly bitter spinach."
+      }
+    },
+    {
+      "title": "Garlicky spinach and egg rice bowl",
+      "summary": "Crispy rice, wilted spinach and soft-boiled eggs, ready in under 20 minutes.",
+      "servings": 2,
+      "nutrition": {
+        "calories": 480,
+        "protein": 22
+      },
+      "category": "healthy",
+      "time_minutes": 18,
+      "difficulty": "easy",
+      "ingredients_used": [
+        {
+          "name": "cooked rice",
+          "amount": "1 tub"
+        },
+        {
+          "name": "eggs",
+          "amount": "3"
+        },
+        {
+          "name": "spinach",
+          "amount": "2 handfuls"
+        },
+        {
+          "name": "red onion",
+          "amount": "half"
+        }
+      ],
+      "extra_needed": [
+        {
+          "name": "garlic",
+          "amount": "2 cloves"
+        },
+        {
+          "name": "soy sauce",
+          "amount": "1 tbsp"
+        }
+      ],
+      "steps": [
+        {
+          "number": 1,
+          "instruction": "Boil the eggs for 6 minutes, then cool them in cold water.",
+          "minutes": 6
+        },
+        {
+          "number": 2,
+          "instruction": "Fry the onion and garlic, then add the rice and fry until it starts to crisp.",
+          "minutes": 8
+        },
+        {
+          "number": 3,
+          "instruction": "Stir in the spinach and soy sauce, spoon into bowls and top with the halved eggs.",
+          "minutes": 4
+        }
+      ],
+      "pairing": {
+        "items": [
+          "garlic",
+          "soy",
+          "soft egg"
+        ],
+        "reason": "Garlic and soy give the rice a savoury punch, and the runny yolk turns into a sauce."
+      }
+    },
+    {
+      "title": "Chorizo and apple fried rice with pesto yogurt",
+      "summary": "A quick fried rice that uses up the leftover rice and spinach, with a cool pesto yogurt on top.",
+      "servings": 2,
+      "nutrition": {
+        "calories": 605,
+        "protein": 29
+      },
+      "category": "adventurous",
+      "time_minutes": 20,
+      "difficulty": "easy",
+      "ingredients_used": [
+        {
+          "name": "cooked rice",
+          "amount": "1 tub"
+        },
+        {
+          "name": "chorizo",
+          "amount": "half a ring"
+        },
+        {
+          "name": "apple",
+          "amount": "1"
+        },
+        {
+          "name": "spinach",
+          "amount": "2 handfuls"
+        },
+        {
+          "name": "eggs",
+          "amount": "2"
+        },
+        {
+          "name": "red onion",
+          "amount": "1"
+        },
+        {
+          "name": "green pesto",
+          "amount": "1 tbsp"
+        },
+        {
+          "name": "natural yogurt",
+          "amount": "3 tbsp"
+        }
+      ],
+      "extra_needed": [
+        {
+          "name": "soy sauce",
+          "amount": "1 tbsp"
+        }
+      ],
+      "steps": [
+        {
+          "number": 1,
+          "instruction": "Slice the chorizo and red onion, and cut the apple into small cubes.",
+          "minutes": 4
+        },
+        {
+          "number": 2,
+          "instruction": "Fry the chorizo in a dry pan until it releases its red oil, then add the onion.",
+          "minutes": 4
+        },
+        {
+          "number": 3,
+          "instruction": "Add the apple and rice. Fry on high, stirring, until the rice starts to crisp. Splash in the soy sauce.",
+          "minutes": 6
+        },
+        {
+          "number": 4,
+          "instruction": "Push the rice aside, scramble the eggs in the gap, then stir everything together with the spinach until it wilts.",
+          "minutes": 4
+        },
+        {
+          "number": 5,
+          "instruction": "Stir the pesto into the yogurt and spoon it over the top to serve.",
+          "minutes": 2
+        }
+      ],
+      "pairing": {
+        "items": [
+          "chorizo",
+          "apple",
+          "pesto yogurt"
+        ],
+        "reason": "The apple's sharp sweetness cuts through the smoky, fatty chorizo the way a high note cuts through a bass line. The cool pesto yogurt then brings the dish back down, like a rest at the end of a bar."
+      }
+    }
+  ]
+}

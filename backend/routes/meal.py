@@ -129,6 +129,27 @@ def recipe_validation(recipe, data):
         recipe["pairing"] = None  # classic mode has no composer pairing
     return None
 
+CATEGORIES = ["quick", "healthy", "adventurous"]
+
+def pick_recipes(recipes, data, good, seen):
+    """Adds recipes that pass the checks to `good` (one per category). Returns the last error."""
+    last_error = None
+    for recipe in recipes or []:
+        # Gemini sometimes writes "Quick" or "healthy "
+        recipe["category"] = str(recipe.get("category") or "").strip().lower()
+        error = recipe_validation(recipe, data)
+        if not error and data.get("servings") and recipe["servings"] != data["servings"]:
+            error = "Serving size mismatch"
+        if error:
+            print(f"[meal] dropped {recipe['category'] or 'uncategorised'} recipe: {error}")
+            last_error = error
+            continue
+        if recipe["category"] in seen:
+            continue
+        seen.add(recipe["category"])
+        good.append(recipe)
+    return last_error
+
 @meal_bp.post("/api/meal")
 def meal():
     data = request.get_json(silent=True)
@@ -160,23 +181,26 @@ def meal():
         print(e)
         return jsonify(error="Something went wrong generating your recipe."), 500
 
-    recipes = output.get("recipes")
-    if not recipes:
-        return jsonify(error="no recipe could be made from your selection."), 422
+    # keep every recipe that passes the checks (one per category) instead of failing them all
+    good, seen = [], set()
+    last_error = pick_recipes(output.get("recipes"), data, good, seen)
 
-    categories = {r["category"] for r in recipes}
-    if len(recipes) != 3 or categories != {"quick", "healthy", "adventurous"}:
-        return jsonify(error="The recipe service returned an unusable result. Please try again"), 502
+    # missing a category? ask Gemini once more, for just those
+    missing = [c for c in CATEGORIES if c not in seen]
+    if missing:
+        retry_prompt = (prompt + "\n\nOnly return recipes for these categories: "
+                        + ", ".join(missing) + ". Follow each category's rules exactly.")
+        try:
+            more = generate_recipes(retry_prompt)
+            last_error = pick_recipes(more.get("recipes"), data, good, seen) or last_error
+        except Exception as e:
+            print("[meal] retry failed:", e)
 
-    for recipe in recipes:
-        error = recipe_validation(recipe, data)
-        if error:
-            return jsonify(error=error), 422
+    if not good:
+        return jsonify(error=last_error or "no recipe could be made from your selection."), 422
 
-        if data.get("servings") and recipe["servings"] != data["servings"]:
-            return jsonify(error="Serving size mismatch"), 502
-
-    return jsonify(output), 200
+    good.sort(key=lambda r: CATEGORIES.index(r["category"]))
+    return jsonify(recipes=good), 200
 
 def ingredients_to_string(data):
     lines = []

@@ -9,8 +9,13 @@ import { recordRaid } from "../api/client.js";
 import { newBadges } from "../utils/badges.js";
 import BadgeUnlocked from "../components/BadgeUnlocked.jsx";
 
+const CATEGORY_LABELS = { quick: "Quick", healthy: "Healthy", adventurous: "Adventurous" };
+
 function RecipePage({
   recipe,
+  options = [recipe],
+  selected = 0,
+  onSelect,
   user,
   onUserChange,
   from,
@@ -39,7 +44,30 @@ function RecipePage({
         </button>
       </header>
 
-      <RecipeCard recipe={recipe} />
+      {options.length > 1 && (
+        <div
+          role="group"
+          aria-label="Pick a recipe"
+          className="grid gap-1 rounded-full bg-white p-1 ring-1 ring-forest/10"
+          style={{ gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))` }}
+        >
+          {options.map((option, i) => (
+            <button
+              key={option.title}
+              data-sound="click"
+              onClick={() => onSelect(i)}
+              aria-pressed={i === selected}
+              className={`rounded-full py-2.5 text-sm font-bold transition ${
+                i === selected ? "bg-forest text-lime-bright" : "text-forest/70 hover:bg-sprout"
+              }`}
+            >
+              {CATEGORY_LABELS[option.category] || `Option ${i + 1}`}
+            </button>
+          ))}
+        </div>
+      )}
+
+      <RecipeCard key={recipe.title} recipe={recipe} />
 
       <div className="flex items-center justify-between gap-3 rounded-3xl bg-white px-5 py-4 ring-1 ring-forest/10">
         <div>
@@ -54,7 +82,7 @@ function RecipePage({
             Most wanted →
           </button>
         </div>
-        <UpvoteButton recipe={recipe} onChange={onRecipeChange} />
+        <UpvoteButton key={recipe.title} recipe={recipe} onChange={onRecipeChange} />
       </div>
 
       {recipe.steps.length > 0 && (

@@ -51,8 +51,8 @@ function ReviewPage({ ingredients, onChange, onComposed, onBack }) {
       if (constraints.diet.length) payload.diet = constraints.diet;
       if (constraints.equipment.length)
         payload.equipment = constraints.equipment;
-      const meal = await getMeal(payload);
-      onComposed(meal);
+      const meals = await getMeal(payload);
+      onComposed(meals);
     } catch (err) {
       setError(err.message);
     } finally {
