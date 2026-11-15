@@ -3,6 +3,7 @@ from flask import Flask
 from flask_cors import CORS
 from config import SECRET_KEY
 from routes.auth import auth_bp
+from routes.shopping import shopping_bp
 from routes.scan import scan_bp
 from routes.meal import meal_bp
 from routes.recipes import recipes_bp
@@ -19,6 +20,7 @@ app.register_blueprint(meal_bp)
 app.register_blueprint(recipes_bp)
 app.register_blueprint(auth_bp)
 app.register_blueprint(swap_bp)
+app.register_blueprint(shopping_bp)
 init_db()
 
 if __name__ == "__main__":

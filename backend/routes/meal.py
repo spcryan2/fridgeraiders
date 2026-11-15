@@ -78,6 +78,10 @@ def constraints_validation(data):
             if item not in allowed_equipment:
                 return "equipment items must be from: " + ", ".join(allowed_equipment)
 
+    shopping_trip = data.get("shopping_trip")
+    if shopping_trip is not None and not isinstance(shopping_trip, bool):
+        return "shopping_trip must be true or false"
+
     return None
 
 def recipe_validation(recipe, data):
@@ -246,6 +250,13 @@ def constraints_to_string(data):
     if data.get("equipment"):
         lines.append(
             "the user only has access to the following appliances: {}, so recipes must not need anything else".format(', '.join(data['equipment'])))
+    if data.get("shopping_trip"):
+        lines.append("the user is happy to go to the shops, so a recipe can use up to 4 extra ingredients "
+                     "they would need to buy. List every one of them in extra_needed. "
+                     "Shopping time does not count towards the time limit")
+    elif data.get("shopping_trip") is False:
+        lines.append("the user does not want to go to the shops. Only use the listed ingredients plus "
+                     "salt, pepper, oil and water, and leave extra_needed empty")
     if data.get("mode"):
         lines.append(
             "the mode is {}, where classic means the recipe shouldn't be too adventurous and should be a known meal, and composer means explore new options and make a recipe with ingredients you wouldn't think would work well together.".format(data['mode']))
