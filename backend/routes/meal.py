@@ -6,8 +6,8 @@ from prompts import load_prompt
 meal_bp = Blueprint('meal', __name__)
 
 MEAL_PROMPT_TEMPLATE = load_prompt("meal_prompt")
-if "{{CONSTANTS}}" in MEAL_PROMPT_TEMPLATE or "{{CONSTRAINTS}}" in MEAL_PROMPT_TEMPLATE:
-    raise RuntimeError("meal prompt is missing {{INGREDIENTS}} or {{CONSTANTS}}")
+if "{{INGREDIENTS}}" not in MEAL_PROMPT_TEMPLATE or "{{CONSTRAINTS}}" not in MEAL_PROMPT_TEMPLATE:
+    raise RuntimeError("meal prompt is missing {{INGREDIENTS}} or {{CONSTRAINTS}}")
 
 def ingredients_validation(data):
     if not data:
@@ -18,23 +18,26 @@ def ingredients_validation(data):
     if not isinstance(ingredients,list) or not ingredients or len(ingredients) > 40:
         return "The ingredients datatype is invalid"
     for item in ingredients:
-        subdata = item
-        if not isinstance(subdata, dict):
+        if not isinstance(item, dict):
             return "the ingredient datatype is invalid"
-        name = subdata.get("name")
+        name = item.get("name")
         if not isinstance(name, str) or "{{" in name or not name.strip() or len(name) > 40:
             return "the name field is malformed"
-        category = subdata.get("category")
+        category = item.get("category")
         if not isinstance(category, str) or "{{" in category or not category.strip() or len(category) > 40:
             return "the category field is malformed"
-        confidence = subdata.get("confidence")
+        confidence = item.get("confidence")
         if not isinstance(confidence, str) or "{{" in confidence or not confidence.strip() or len(confidence) > 40:
             return "the confidence field is malformed"
-        if subdata.get("quantity") is not None:
-            if not isinstance(subdata.get("quantity"), str):
+        if item.get("quantity") is not None:
+            if not isinstance(item.get("quantity"), str):
                 return ("the quantity field is of incorrect datatype")
-            if len(subdata.get("quantity")) > 40 or "{{" in subdata.get("quantity"):
+            if len(item.get("quantity")) > 40 or "{{" in item.get("quantity"):
                 return "the quantity datatype is malformed"
+
+        use_first = item.get("use_first")
+        if use_first is not None and not isinstance(use_first, bool):
+            return "use_first must be true or false"
 
     return None
 
@@ -76,13 +79,6 @@ def constraints_validation(data):
 
     return None
 
-def extra_validation(data):
-    for ingredient in data.get("ingredients"):
-        use_first = ingredient.get("use_first")
-        if use_first is not None and not isinstance(use_first, bool):
-            return "use_first must be true or false"
-    return None
-
 def recipe_validation(recipe, data):
     """Sanity checks on the recipe Gemini sends back. Returns an error message,
     or None if it's fine. Small problems get fixed in place instead."""
@@ -109,8 +105,17 @@ def recipe_validation(recipe, data):
     if max_minutes and recipe["time_minutes"] > max_minutes:
         return "couldn't fit a recipe into {} minutes. Try a longer time limit.".format(max_minutes)
 
-    if not recipe.get("difficulty"):
-        recipe["difficulty"] = "easy"
+    if recipe.get("category") not in ["quick", "adventurous", "healthy"]:
+        return "the recipe category is not correct"
+    if recipe.get("category") == "quick":
+        if recipe.get("time_minutes") > 20:
+            return "the recipe is incorrectly categorised"
+    if recipe.get("category") == "healthy":
+        if recipe.get("nutrition").get("calories") > 650:
+            return "the recipe is incorrectly categorised"
+        if recipe.get("nutrition").get("protein") < 20:
+            return "the recipe is incorrectly categorised"
+
     if data.get("mode") == "classic":
         recipe["pairing"] = None  # classic mode has no composer pairing
     return None
@@ -122,8 +127,6 @@ def meal():
     error = ingredients_validation(data)
     if not error:
         error = constraints_validation(data)
-    if not error:
-        error = extra_validation(data)
     if error:
         return jsonify(error=error), 400
 
@@ -148,19 +151,23 @@ def meal():
         print(e)
         return jsonify(error="Something went wrong generating your recipe."), 500
 
-    if not output.get("recipes"):
+    recipes = output.get("recipes")
+    if not recipes:
         return jsonify(error="no recipe could be made from your selection."), 422
 
+    categories = {r["category"] for r in recipes}
+    if len(recipes) != 3 or categories != {"quick", "healthy", "adventurous"}:
+        return jsonify(error="The recipe service returned an unusable result. Please try again"), 502
 
-    recipe = output["recipes"][0]
-    error = recipe_validation(recipe, data)
-    if error:
-        return jsonify(error=error), 422
+    for recipe in recipes:
+        error = recipe_validation(recipe, data)
+        if error:
+            return jsonify(error=error), 422
 
-    if data.get("servings") and recipe["servings"] != data["servings"]:
-        return jsonify(error="Serving size mismatch"), 502
+        if data.get("servings") and recipe["servings"] != data["servings"]:
+            return jsonify(error="Serving size mismatch"), 502
 
-    return jsonify(recipe), 200
+    return jsonify(output), 200
 
 def ingredients_to_string(data):
     lines = []

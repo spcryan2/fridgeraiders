@@ -3,6 +3,11 @@ The recipes should be based only on the listed ingredients, with exceptions incl
 You do not have to use every single ingredient provided, just use the ingredients necessary. The quantities provided are what the user has, so no recipe should require more of a listed ingredient than that.
 If the listed ingredients and constraints cannot make a sensible meal, return fewer recipes or state that there are no sensible recipes that can be made. Do not invent recipes that are nonsensical.
 The confidence value on each ingredient is the ai model's confidence that they matched the ingredient correctly.
+You should gather nutrition information for the total recipe from reputable sources online and fact check this to ensure accurate results. These values should not be negative. The total calorie count and protein amount should be per serving, not for all servings in the meal. Calories and protein is in integer form, assume the values are in kcal (calories) and grams (protein)
+You should aim to suggest 3 different recipes, with a category of quick/healthy/adventurous. If this is not possible you can return less recipes. Do not make recipes up to fit this.
+QUICK: Should be always less than 20 minutes
+HEALTHY: Should be less than 650kcal and have at least 20 grams of protein
+ADVENTUROUS: Should use unconventional flavour pairings or bold global ingredients.
 
 Here are the ingredients the user has:
 {{INGREDIENTS}}
@@ -20,6 +25,8 @@ user has no "diet" value, has a hob and microwave, and wants 2 servings in 20 mi
   "title": "Chorizo and apple fried rice with pesto yogurt",
   "summary": "A quick fried rice that uses up the leftover rice and spinach, with a cool pesto yogurt on top.",
   "servings": 2,
+  "nutrition" : { "calories": 605, "protein": 29 },
+  "category": "adventurous",
   "time_minutes": 20,
   "difficulty": "easy",
   "ingredients_used": [
@@ -72,6 +79,8 @@ user is vegetarian, has a hob and a microwave, wants 2 servings in 30 minutes or
   "title": "Spinach and chickpea coconut curry with microwave rice",
   "summary": "A creamy one-pan curry that uses up the spinach, served over rice from the microwave.",
   "servings": 2,
+  "nutrition": { "calories": 613, "protein": 16 },
+  "category": "healthy",
   "time_minutes": 24,
   "difficulty": "easy",
   "ingredients_used": [
@@ -124,6 +133,8 @@ user is vegetarian, has a hob and a microwave, has 2 eggs, spinach and rice, wan
   "title": "Bacon and egg baked rice",
   "summary": "A tasty dish with eggs and rice.",
   "servings": 4,
+  "nutrition": { "calories": 10005, "protein": -4 }
+  "category": "inexpensive"
   "time_minutes": 15,
   "difficulty": "very hard",
   "ingredients_used": [
@@ -161,7 +172,11 @@ Problems with this prompt:
 -6 eggs required when the user only has two
 -Unlisted ingredients and vague amounts in the recipe
 -The pairing reason is meaningless
+-The nutrition values are wildly incorrect. Refer to best estimates online for these values. They should not be negative
+-The category "inexpensive" doesn't exist. It can only be quick/adventurous/healthy.
 
 The examples show format and quality only. The real request's constraints should always be prioritised and the example dishes should never be used. time_minutes means the sum of the step minutes. The allowed difficulty values are: easy, medium, hard, very hard. If a recipe has an optional ingredient not listed to improve flavour, such as soy sauce, add it to extra_needed.
 
 Returning "there are no sensible recipes" will break the JSON schema, so instead return an empty recipe.
+
+The real output will be a RecipeList, as you will be attempting to return 3 recipes at once, with each recipe as an entry in the format as described above.
