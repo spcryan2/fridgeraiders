@@ -25,6 +25,7 @@ function ReviewPage({ ingredients, onChange, onComposed, onBack }) {
     servings: 2,
     diet: [],
     equipment: [],
+    shopping_trip: false,
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -51,6 +52,7 @@ function ReviewPage({ ingredients, onChange, onComposed, onBack }) {
       if (constraints.diet.length) payload.diet = constraints.diet;
       if (constraints.equipment.length)
         payload.equipment = constraints.equipment;
+      payload.shopping_trip = Boolean(constraints.shopping_trip);
       const meals = await getMeal(payload);
       onComposed(meals);
     } catch (err) {

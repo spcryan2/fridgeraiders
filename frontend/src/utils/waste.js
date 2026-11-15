@@ -38,10 +38,13 @@ export function estimateRescue(ingredients) {
 }
 
 export function readTally() {
+  const empty = { grams: 0, pounds: 0, raids: [] };
   try {
-    return JSON.parse(localStorage.getItem(KEY)) || { grams: 0, pounds: 0, raids: [] };
+    const saved = JSON.parse(localStorage.getItem(KEY));
+    // ignore anything that isn't our shape (an older version saved a plain number here)
+    return saved && Array.isArray(saved.raids) ? saved : empty;
   } catch {
-    return { grams: 0, pounds: 0, raids: [] };
+    return empty;
   }
 }
 

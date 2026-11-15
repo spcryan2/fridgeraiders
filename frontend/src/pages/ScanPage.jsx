@@ -87,13 +87,15 @@ function ScanPage({ user, onScanned, onOpenBoard, onOpenList, onLogIn, onLogOut 
         {loading ? "Raiding…" : "Scan the loot →"}
       </button>
 
-      <button
-        data-sound="pop"
-        onClick={onOpenBoard}
-        className="mx-auto block rounded-full px-5 py-2.5 font-semibold text-lime-bright ring-2 ring-forest-soft transition hover:ring-lime-bright/60 active:scale-95"
-      >
-        Most wanted recipes
-      </button>
+      <div className="flex flex-wrap justify-center gap-3">
+        <button
+          data-sound="pop"
+          onClick={onOpenBoard}
+          className="rounded-full px-5 py-2.5 font-semibold text-lime-bright ring-2 ring-forest-soft transition hover:ring-lime-bright/60 active:scale-95"
+        >
+          Most wanted recipes
+        </button>
+      </div>
 
       <button
         onClick={onOpenList}

@@ -1,5 +1,6 @@
 // running total of fridge ingredients this browser has cooked instead of binning
-const KEY = "fridge-raiders-rescued";
+// its own key: waste.js already uses "fridge-raiders-rescued" for the grams total
+const KEY = "fridge-raiders-rescued-count";
 
 export function getRescued() {
   try {

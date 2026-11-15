@@ -36,10 +36,17 @@ function Label({ title, hint }) {
 
 function ConstraintsForm({ value, onChange }) {
   const [open, setOpen] = useState(false);
+  // the shops question drops down once a time has been picked
+  const [pickedTime, setPickedTime] = useState(false);
 
   // copy the current constraints and change one field
   function update(field, newValue) {
     onChange({ ...value, [field]: newValue });
+  }
+
+  function pickTime(minutes) {
+    update("max_minutes", minutes);
+    setPickedTime(true);
   }
 
   return (
@@ -66,7 +73,7 @@ function ConstraintsForm({ value, onChange }) {
             <div className="flex flex-wrap gap-2">
               <Chip
                 selected={value.max_minutes === null}
-                onClick={() => update("max_minutes", null)}
+                onClick={() => pickTime(null)}
               >
                 Any
               </Chip>
@@ -74,12 +81,37 @@ function ConstraintsForm({ value, onChange }) {
                 <Chip
                   key={mins}
                   selected={value.max_minutes === mins}
-                  onClick={() => update("max_minutes", mins)}
+                  onClick={() => pickTime(mins)}
                 >
                   <span className="normal-case">{mins} min</span>
                 </Chip>
               ))}
             </div>
+
+            {pickedTime && (
+              <div className="mt-4 rounded-2xl bg-cream p-3 motion-safe:animate-step-in">
+                <Label title="Up for a trip to the shops?" hint="shopping time doesn't count" />
+                <div className="flex flex-wrap gap-2">
+                  <Chip
+                    selected={!value.shopping_trip}
+                    onClick={() => update("shopping_trip", false)}
+                  >
+                    <span className="normal-case">Fridge only</span>
+                  </Chip>
+                  <Chip
+                    selected={Boolean(value.shopping_trip)}
+                    onClick={() => update("shopping_trip", true)}
+                  >
+                    <span className="normal-case">I'll pop out</span>
+                  </Chip>
+                </div>
+                <p className="mt-2 text-xs text-forest/60">
+                  {value.shopping_trip
+                    ? "Recipes can use up to 4 things you'd need to buy."
+                    : "Only what you've got, plus salt, pepper, oil and water."}
+                </p>
+              </div>
+            )}
           </div>
 
           <div>
