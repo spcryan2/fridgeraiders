@@ -1,6 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { ConversationProvider } from "@elevenlabs/react";
 import { playSound } from "../utils/sound.js";
 import RaiderFridge from "./RaiderFridge.jsx";
+import VoiceChef from "./VoiceChef.jsx";
 
 const RING_RADIUS = 54;
 const RING_LENGTH = 2 * Math.PI * RING_RADIUS;
@@ -11,10 +13,12 @@ function formatTime(seconds) {
   return `${mins}:${secs}`;
 }
 
-function CookMode({ steps, onExit }) {
+function CookMode({ steps, title, onExit }) {
   const [index, setIndex] = useState(0);
   const [secondsLeft, setSecondsLeft] = useState((steps[0].minutes || 0) * 60);
   const [running, setRunning] = useState(false);
+  // goes up by one each time a timer finishes, so the voice chef can react
+  const [timersDone, setTimersDone] = useState(0);
 
   const step = steps[index];
   const nextStep = steps[index + 1];
@@ -35,6 +39,7 @@ function CookMode({ steps, onExit }) {
   useEffect(() => {
     if (running && secondsLeft === 0) {
       setRunning(false);
+      setTimersDone((n) => n + 1);
       navigator.vibrate?.([300, 100, 300]);
       playSound("ding",0.8);
     }
@@ -45,6 +50,61 @@ function CookMode({ steps, onExit }) {
     setSecondsLeft((steps[i].minutes || 0) * 60);
     setRunning(false);
   }
+
+  // what the voice chef does when it uses a tool. Each one returns a short
+  // sentence so the chef knows what happened.
+  function describeStep() {
+    const timer =
+      totalSeconds === 0
+        ? "This step has no timer."
+        : running
+          ? `The timer is running with ${formatTime(secondsLeft)} left.`
+          : `The timer is stopped at ${formatTime(secondsLeft)}.`;
+    return `step ${index + 1} of ${steps.length}: ${step.instruction} ${timer}`;
+  }
+
+  function voiceNext() {
+    if (isLast) return "That was the last step, the meal is done.";
+    goTo(index + 1);
+    return `Moved to step ${index + 2}: ${steps[index + 1].instruction}`;
+  }
+
+  function voiceBack() {
+    if (index === 0) return "Already on the first step.";
+    goTo(index - 1);
+    return `Back to step ${index}: ${steps[index - 1].instruction}`;
+  }
+
+  function voiceStartTimer() {
+    if (totalSeconds === 0) return "This step has no timer.";
+    if (done) return "The timer for this step has already finished.";
+    setRunning(true);
+    return `Timer started, ${formatTime(secondsLeft)} to go.`;
+  }
+
+  function voicePauseTimer() {
+    setRunning(false);
+    return "Timer paused.";
+  }
+
+  // keyboard shortcuts: arrows for steps, space for the timer, Esc to leave.
+  // The ref always holds the latest version, so the listener never goes stale.
+  const handleKeyRef = useRef(null);
+  handleKeyRef.current = (e) => {
+    if (e.key === "Escape") return onExit();
+    if (e.target.closest("button, input, textarea")) return; // let buttons handle their own keys
+    if (e.key === "ArrowRight" && !isLast) goTo(index + 1);
+    else if (e.key === "ArrowLeft" && index > 0) goTo(index - 1);
+    else if (e.key === " " && totalSeconds > 0 && !done) {
+      e.preventDefault();
+      setRunning((r) => !r);
+    }
+  };
+  useEffect(() => {
+    const listener = (e) => handleKeyRef.current(e);
+    window.addEventListener("keydown", listener);
+    return () => window.removeEventListener("keydown", listener);
+  }, []);
 
   return (
     <div className="fixed inset-0 z-50 m-0 flex flex-col bg-forest px-6 pt-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] text-white">
@@ -73,7 +133,7 @@ function CookMode({ steps, onExit }) {
       </header>
 
       {/* key makes the step fade in fresh each time it changes */}
-      <div key={index} className="relative motion-safe:animate-step-in flex flex-1 flex-col justify-center gap-8">
+      <div key={index} aria-live="polite" className="relative motion-safe:animate-step-in flex flex-1 flex-col justify-center gap-8">
         <p className="text-3xl leading-snug font-semibold sm:text-4xl">
           {step.instruction}
         </p>
@@ -124,6 +184,21 @@ function CookMode({ steps, onExit }) {
           </div>
         )}
       </div>
+
+      <ConversationProvider>
+        <VoiceChef
+          title={title}
+          steps={steps}
+          index={index}
+          stepText={step.instruction}
+          timersDone={timersDone}
+          describeStep={describeStep}
+          onNext={voiceNext}
+          onBack={voiceBack}
+          onStartTimer={voiceStartTimer}
+          onPauseTimer={voicePauseTimer}
+        />
+      </ConversationProvider>
 
       {nextStep && (
         <p className="mb-4 truncate text-sm text-white/45">
