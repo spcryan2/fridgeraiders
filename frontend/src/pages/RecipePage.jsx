@@ -3,9 +3,22 @@ import RecipeCard from "../components/RecipeCard.jsx";
 import CookMode from "../components/CookMode.jsx";
 import Logo from "../components/Logo.jsx";
 import UpvoteButton from "../components/UpvoteButton.jsx";
+import WasteSaved from "../components/WasteSaved.jsx";
+import { estimateRescue, readTally, recordRescue } from "../utils/waste.js";
+import { recordRaid } from "../api/client.js";
 
-function RecipePage({ recipe, from, onRecipeChange, onBack, onStartOver, onOpenBoard }) {
+function RecipePage({
+  recipe,
+  user,
+  onUserChange,
+  from,
+  onRecipeChange,
+  onBack,
+  onStartOver,
+  onOpenBoard,
+}) {
   const [cooking, setCooking] = useState(false);
+  const [tally, setTally] = useState(readTally);
   const fromBoard = from === "leaderboard";
 
   return (
@@ -26,7 +39,9 @@ function RecipePage({ recipe, from, onRecipeChange, onBack, onStartOver, onOpenB
 
       <div className="flex items-center justify-between gap-3 rounded-3xl bg-white px-5 py-4 ring-1 ring-forest/10">
         <div>
-          <p className="wordmark text-lg">Good raid?</p>
+          <p className="wordmark text-lg">
+            {user ? `Good raid, ${user.raider_name}?` : "Good raid?"}
+          </p>
           <button
             onClick={onOpenBoard}
             className="text-sm font-semibold whitespace-nowrap text-leaf hover:underline"
@@ -37,10 +52,22 @@ function RecipePage({ recipe, from, onRecipeChange, onBack, onStartOver, onOpenB
         <UpvoteButton recipe={recipe} onChange={onRecipeChange} />
       </div>
 
+      <WasteSaved recipe={recipe} tally={tally} />
+
       {recipe.steps.length > 0 && (
         <button
           data-sound="pop"
-          onClick={() => setCooking(true)}
+          onClick={() => {
+            const next = recordRescue(recipe);
+            // only tell the server about a new raid, not a re-cook of the same recipe
+            if (user && next.raids.length > tally.raids.length) {
+              recordRaid(estimateRescue(recipe.ingredients_used).grams)
+                .then(onUserChange)
+                .catch(() => {});
+            }
+            setTally(next);
+            setCooking(true);
+          }}
           className="wordmark w-full rounded-full bg-lime py-5 text-2xl text-forest shadow-[0_5px_0_var(--color-leaf)] transition active:translate-y-1 active:shadow-[0_1px_0_var(--color-leaf)]"
         >
           ▶ Start cooking

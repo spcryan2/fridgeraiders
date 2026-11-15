@@ -128,3 +128,36 @@ export async function upvoteRecipe(id) {
   const data = await request(`/api/recipes/${id}/upvote`, { method: "POST" });
   return data.upvotes;
 }
+
+function sendJson(url, body) {
+  return request(url, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(body ?? {}),
+  });
+}
+
+// null when logged out or the backend isn't running
+export async function getMe() {
+  try {
+    return (await request("/api/auth/me")).user;
+  } catch {
+    return null;
+  }
+}
+
+export async function signUp(details) {
+  return (await sendJson("/api/auth/signup", details)).user;
+}
+
+export async function logIn(details) {
+  return (await sendJson("/api/auth/login", details)).user;
+}
+
+export async function logOut() {
+  await sendJson("/api/auth/logout");
+}
+
+export async function recordRaid(grams) {
+  return (await sendJson("/api/streak/raid", { grams })).user;
+}
