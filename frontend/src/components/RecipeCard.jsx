@@ -1,4 +1,5 @@
 import SectionHeading from "./SectionHeading.jsx";
+import FlavourMix from "./FlavourMix.jsx";
 
 function formatExtra(item) {
   if (typeof item === "string") return item;
@@ -50,6 +51,12 @@ function RecipeCard({ recipe }) {
             </p>
           </section>
         )}
+
+        <FlavourMix
+          key={recipe.title}
+          ingredients={recipe.ingredients_used}
+          pairing={recipe.pairing}
+        />
 
         <section className="space-y-3">
           <SectionHeading>From your fridge</SectionHeading>
