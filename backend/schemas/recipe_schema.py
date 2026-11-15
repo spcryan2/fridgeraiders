@@ -22,7 +22,7 @@ class Recipe(BaseModel):
     title: str
     summary: str
     servings: int
-    nutrition: List[Nutrition]
+    nutrition: Nutrition
     category: str
     time_minutes: int
     difficulty: str = Field(description="one of: easy, medium, hard")

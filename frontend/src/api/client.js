@@ -51,18 +51,36 @@ export async function scanPhotos(files) {
   return { ingredients };
 }
 
+// nutrition should be one { calories, protein } object, but tidy up a list or a gap
+function tidyNutrition(nutrition) {
+  const value = Array.isArray(nutrition) ? nutrition[0] : nutrition;
+  return value && typeof value.calories === "number" ? value : null;
+}
+
+// the backend sends { recipes: [...] } (quick, healthy, adventurous); older versions sent one recipe
+function toRecipeList(data) {
+  const list = Array.isArray(data?.recipes) ? data.recipes : [data];
+  return list
+    .filter((recipe) => recipe && recipe.title)
+    .map((recipe) => ({ ...recipe, nutrition: tidyNutrition(recipe.nutrition) }));
+}
+
+// always resolves to a list of recipes
 export async function getMeal(payload) {
   if (MOCK_MEAL) {
     await sleep(1500);
-    const meal = structuredClone(mockMeal);
-    if (payload.mode === "classic") meal.pairing = null;
-    return meal;
+    const meals = toRecipeList(structuredClone(mockMeal));
+    if (payload.mode === "classic") meals.forEach((meal) => (meal.pairing = null));
+    return meals;
   }
-  return request("/api/meal", {
+  const data = await request("/api/meal", {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify(payload),
   });
+  const meals = toRecipeList(data);
+  if (meals.length === 0) throw new Error("no recipe could be made from your selection.");
+  return meals;
 }
 
 // ---- saved recipes and upvotes ----
@@ -82,6 +100,7 @@ function tidyRecipe(recipe) {
     extra_needed: recipe.extra_needed || [],
     steps: recipe.steps || [],
     pairing: recipe.pairing || null,
+    nutrition: tidyNutrition(recipe.nutrition),
     upvotes: recipe.upvotes || 0,
   };
 }
