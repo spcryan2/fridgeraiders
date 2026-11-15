@@ -5,6 +5,7 @@ import RecipePage from "./pages/RecipePage.jsx";
 import LeaderboardPage from "./pages/LeaderboardPage.jsx";
 import AuthPage from "./pages/AuthPage.jsx";
 import { getMe, logOut } from "./api/client.js";
+import MyListPage from "./pages/MyListPage.jsx";
 
 function App() {
   const [screen, setScreen] = useState("loading");
@@ -85,6 +86,7 @@ function App() {
             user={user}
             onScanned={handleScanned}
             onOpenBoard={handleOpenBoard}
+            onOpenList={()=> setScreen("my list")}
             onLogIn={() => setScreen("auth")}
             onLogOut={handleLogOut}
           />
@@ -112,6 +114,7 @@ function App() {
         {screen === "leaderboard" && (
           <LeaderboardPage onBack={handleStartOver} onOpen={handleOpenFromBoard} />
         )}
+        {screen === "mylist" && <MyListPage onBack={() => setScreen("scan")} />}
       </main>
     </div>
   );

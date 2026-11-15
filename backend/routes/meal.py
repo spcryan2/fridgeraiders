@@ -2,6 +2,7 @@ from flask import Blueprint, jsonify, request
 from services.gemini_client import generate_recipes
 from google.genai import errors
 from prompts import load_prompt
+from schemas.recipe_schema import AISLES
 
 meal_bp = Blueprint('meal', __name__)
 
@@ -98,6 +99,14 @@ def recipe_validation(recipe, data):
         step["number"] = number  # keep steps numbered 1, 2, 3...
     if not isinstance(recipe.get("ingredients_used"), list) or not isinstance(recipe.get("extra_needed"), list):
         return "the recipe ingredients came back in the wrong shape"
+    for item in recipe["extra_needed"]:
+        price= item.get("estimated_price")
+        if isinstance(price, bool) or not 0<= price<= 50:
+            item["estimated_price"]=None
+        else:
+            item["estimated_price"] = round(price,2)
+        if item.get("aisle") not in AISLES:
+            item["aisle"]="other"
 
     # the prompt says time_minutes is the sum of the steps, so make it true
     recipe["time_minutes"] = sum(step["minutes"] for step in steps)

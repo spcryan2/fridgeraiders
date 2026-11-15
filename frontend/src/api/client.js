@@ -161,3 +161,11 @@ export async function logOut() {
 export async function recordRaid(grams) {
   return (await sendJson("/api/streak/raid", { grams })).user;
 }
+
+export async function getSwap({ missing, recipe, have }) {
+  if (MOCK_MEAL) {
+    await sleep(800);
+    return { found: true, swap: "Worcestershire sauce", tip: "Use half as much, it's stronger." };
+  }
+  return sendJson("/api/swap", { missing, recipe, have });
+}

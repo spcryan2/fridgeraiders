@@ -1,91 +1,178 @@
 import { useState } from "react";
 import SectionHeading from "./SectionHeading.jsx";
 import { playSound } from "../utils/sound.js";
+import { getSwap } from "../api/client.js";
+import {
+  loadTicks,
+  saveTicks,
+  addToMyList,
+  groupByAisle,
+  buildListText,
+  shareText,
+  openWhatsApp,
+  formatPrice,
+} from "../utils/shoppingList.js";
 
-// extra_needed items can be plain strings or { name, amount }
-function formatItem(item) {
-  if (typeof item === "string") return item;
-  return item.amount ? `${item.name} (${item.amount})` : item.name;
-}
+function ShoppingList({ items, title, have = [] }) {
+  // older saved recipes may store items as plain strings
+  const list = items.map((item) => (typeof item === "string" ? { name: item } : item));
 
-function ShoppingList({ items, title }) {
-  const [checked, setChecked] = useState([]); // indexes of ticked-off items
-  const [copied, setCopied] = useState(false);
+  const [checked, setChecked] = useState(() => loadTicks(title)); // #1 names ticked off
+  const [swaps, setSwaps] = useState({}); // #3 name -> { found, swap, tip } or { error }
+  const [swapping, setSwapping] = useState(null); // name we're asking Gemini about
+  const [status, setStatus] = useState(null); // short "✓ Copied!" style message
 
-  function toggle(i) {
-    setChecked((prev) =>
-      prev.includes(i) ? prev.filter((x) => x !== i) : [...prev, i]
-    );
+  function flash(message) {
+    setStatus(message);
+    setTimeout(() => setStatus(null), 2000);
   }
 
-  // only send what's still needed
-  const remaining = items.filter((_, i) => !checked.includes(i));
-
-  function buildText() {
-    const lines = remaining.map((item) => `☐ ${formatItem(item)}`);
-    return `🛒 Shopping list for ${title}:\n${lines.join("\n")}\n\nSent from Fridge Raiders`;
+  function toggle(name) {
+    const next = checked.includes(name)
+      ? checked.filter((n) => n !== name)
+      : [...checked, name];
+    setChecked(next);
+    saveTicks(title, next); // #1 survives a reload
   }
+
+  async function handleSwap(name) {
+    setSwapping(name);
+    try {
+      const result = await getSwap({
+        missing: name,
+        recipe: title,
+        have: have.map((h) => h.name),
+      });
+      setSwaps((prev) => ({ ...prev, [name]: result }));
+      if (result.found) playSound("ding", 0.5);
+    } catch (err) {
+      setSwaps((prev) => ({ ...prev, [name]: { error: err.message } }));
+    } finally {
+      setSwapping(null);
+    }
+  }
+
+  // still to buy = not ticked and not swapped for something you have
+  const needed = list.filter(
+    (item) => !checked.includes(item.name) && !swaps[item.name]?.found
+  );
+  const hasPrices = list.some((item) => typeof item.estimated_price === "number");
+  const total = needed.reduce((sum, item) => sum + (item.estimated_price || 0), 0);
+  const text = buildListText(`Shopping list for ${title}`, needed);
 
   async function handleShare() {
-    const text = buildText();
-
-    // phones: open the share sheet (WhatsApp, Messages, etc.)
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: "Shopping list", text });
-        return;
-      } catch (err) {
-        if (err.name === "AbortError") return; // user closed the share sheet
-      }
-    }
-
-    // laptops, or if sharing failed: copy to the clipboard instead
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
+    if ((await shareText(text)) === "copied") {
       playSound("ding", 0.5);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      alert(text); // last resort so they can copy it by hand
+      flash("✓ Copied!");
     }
+  }
+
+  function handleAdd() {
+    addToMyList(needed, title);
+    flash("✓ Added to my list");
   }
 
   return (
-    <section className="space-y-3">
-      <SectionHeading aside={`${remaining.length} to get`}>
-        Grab these too
-      </SectionHeading>
+    <section className="space-y-4">
+      <SectionHeading aside={`${needed.length} to get`}>Grab these too</SectionHeading>
 
-      <ul className="space-y-2">
-        {items.map((item, i) => {
-          const isChecked = checked.includes(i);
-          return (
-            <li key={i}>
-              <label className="flex cursor-pointer items-center gap-3 rounded-2xl border-2 border-dashed border-forest/20 px-4 py-2.5">
-                {/* sound lives on the checkbox: clicking the label also clicks the
-                    checkbox, so putting it on both would pop twice */}
-                <input
-                  data-sound="pop"
-                  type="checkbox"
-                  checked={isChecked}
-                  onChange={() => toggle(i)}
-                  className="h-5 w-5 accent-lime"
-                />
-                <span className={isChecked ? "text-forest/40 line-through" : ""}>
-                  {formatItem(item)}
-                </span>
-              </label>
-            </li>
-          );
-        })}
-      </ul>
+      {/* #2 rough total */}
+      {hasPrices && needed.length > 0 && (
+        <p className="rounded-2xl bg-sprout px-4 py-3 font-semibold">
+          About {formatPrice(total)} to complete this meal
+        </p>
+      )}
 
+      {/* #4 grouped by aisle */}
+      {groupByAisle(list).map((group) => (
+        <div key={group.id} className="space-y-2">
+          <h4 className="text-xs font-bold tracking-[0.2em] text-forest/50 uppercase">
+            {group.label}
+          </h4>
+          <ul className="space-y-2">
+            {group.items.map((item) => {
+              const isChecked = checked.includes(item.name);
+              const swap = swaps[item.name];
+              const crossedOut = isChecked || swap?.found;
+
+              return (
+                <li
+                  key={item.name}
+                  className="rounded-2xl border-2 border-dashed border-forest/20 px-4 py-2.5"
+                >
+                  <label className="flex cursor-pointer items-center gap-3">
+                    <input
+                      data-sound="pop"
+                      type="checkbox"
+                      checked={isChecked}
+                      onChange={() => toggle(item.name)}
+                      className="h-5 w-5 accent-lime"
+                    />
+                    <span className={`flex-1 ${crossedOut ? "text-forest/40 line-through" : ""}`}>
+                      {item.amount ? `${item.name} (${item.amount})` : item.name}
+                    </span>
+                    {typeof item.estimated_price === "number" && (
+                      <span className="text-sm text-forest/60">
+                        {formatPrice(item.estimated_price)}
+                      </span>
+                    )}
+                  </label>
+
+                  {/* #3 swap result or button */}
+                  {swap?.found && (
+                    <p className="mt-1 pl-8 text-sm text-leaf">
+                      🔄 Use {swap.swap} instead. {swap.tip}
+                    </p>
+                  )}
+                  {swap && !swap.found && !swap.error && (
+                    <p className="mt-1 pl-8 text-sm text-forest/60">
+                      Nothing in your fridge works. {swap.tip}
+                    </p>
+                  )}
+                  {swap?.error && (
+                    <p className="mt-1 pl-8 text-sm text-tomato">{swap.error}</p>
+                  )}
+                  {(!swap || swap.error) && !isChecked && (
+                    <button
+                      onClick={() => handleSwap(item.name)}
+                      disabled={swapping === item.name}
+                      className="mt-1 ml-8 text-sm font-semibold text-leaf hover:underline disabled:opacity-50"
+                    >
+                      {swapping === item.name ? "Checking your fridge…" : "Don't have it? Swap it"}
+                    </button>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      ))}
+
+      {/* #6 share + WhatsApp */}
+      <div className="grid grid-cols-2 gap-3">
+        <button
+          onClick={handleShare}
+          disabled={needed.length === 0}
+          className="rounded-full bg-forest py-3 font-semibold text-cream transition active:scale-[0.98] disabled:opacity-40"
+        >
+          📤 Share
+        </button>
+        <button
+          onClick={() => openWhatsApp(text)}
+          disabled={needed.length === 0}
+          className="rounded-full bg-[#25D366] py-3 font-semibold text-white transition active:scale-[0.98] disabled:opacity-40"
+        >
+          💬 WhatsApp
+        </button>
+      </div>
+
+      {/* #5 add to the combined list */}
       <button
-        onClick={handleShare}
-        disabled={remaining.length === 0}
-        className="w-full rounded-full bg-forest py-3 font-semibold text-cream transition active:scale-[0.98] disabled:opacity-40"
+        onClick={handleAdd}
+        disabled={needed.length === 0}
+        className="w-full rounded-full bg-white py-3 font-semibold ring-1 ring-forest/15 transition hover:ring-forest/40 disabled:opacity-40"
       >
-        {copied ? "✓ Copied!" : remaining.length === 0 ? "All got! 🎉" : "📤 Send to a flatmate"}
+        {status || (needed.length ? "＋ Add to my list" : "All got! 🎉")}
       </button>
     </section>
   );

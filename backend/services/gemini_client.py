@@ -4,12 +4,13 @@ from google.genai import types
 from config import GEMINI_API_KEY, GEMINI_MODEL, GEMINI_FALLBACK_MODEL, MOCK_GEMINI
 from prompts import load_prompt
 from schemas.ingredient_schema import IngredientList
-from schemas.recipe_schema import RecipeList
+from schemas.recipe_schema import RecipeList, SwapSuggestion
 import time
 
 from google.genai import errors
 
 SCAN_PROMPT= load_prompt("scan_prompt")
+SWAP_PROMPT = load_prompt("swap_prompt")
 client = genai.Client(
     api_key=GEMINI_API_KEY,
     http_options=types.HttpOptions(timeout=30_000),   # milliseconds = 30 seconds
@@ -132,3 +133,28 @@ def generate_recipes(prompt: str):
     if response.parsed == None:
         raise RuntimeError("AI Output failed")
     return {"recipes": [recipe.model_dump() for recipe in response.parsed.recipes]}
+
+def suggest_swap(missing: str, recipe_title: str, have: list[str]) -> dict:
+    if MOCK_GEMINI:
+        return {"found": True, "swap": "Worcestershire sauce",
+                "tip": "Use half as much, it's stronger and saltier."}
+
+    if client is None:
+        raise RuntimeError("GEMINI_API_KEY is not set. Add it to your .env file")
+
+    prompt = (SWAP_PROMPT
+              .replace("{{RECIPE}}", recipe_title)
+              .replace("{{MISSING}}", missing)
+              .replace("{{HAVE}}", ", ".join(have) or "nothing listed"))
+
+    response = _generate_with_retry(
+        contents=[prompt],
+        config=types.GenerateContentConfig(
+            response_mime_type="application/json",
+            response_schema=SwapSuggestion,
+            temperature=0.3,
+        ),
+    )
+    if response.parsed is None:
+        raise RuntimeError("AI Output failed")
+    return response.parsed.model_dump()

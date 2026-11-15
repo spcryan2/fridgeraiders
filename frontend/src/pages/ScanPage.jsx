@@ -13,7 +13,7 @@ const SCAN_MESSAGES = [
   "Checking for witnesses...",
 ];
 
-function ScanPage({ user, onScanned, onOpenBoard, onLogIn, onLogOut }) {
+function ScanPage({ user, onScanned, onOpenBoard, onOpenList, onLogIn, onLogOut }) {
   const [photos, setPhotos] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);

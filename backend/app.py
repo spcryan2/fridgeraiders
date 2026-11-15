@@ -7,7 +7,7 @@ from routes.scan import scan_bp
 from routes.meal import meal_bp
 from routes.recipes import recipes_bp
 from services.database import init_db
-
+from routes.swap import swap_bp
 
 app = Flask(__name__)
 CORS(app, origins=["http://localhost:5173"])
@@ -18,6 +18,7 @@ app.register_blueprint(scan_bp)
 app.register_blueprint(meal_bp)
 app.register_blueprint(recipes_bp)
 app.register_blueprint(auth_bp)
+app.register_blueprint(swap_bp)
 init_db()
 
 if __name__ == "__main__":

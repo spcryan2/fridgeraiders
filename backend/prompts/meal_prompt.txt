@@ -19,6 +19,11 @@ Here are the constraints for the recipes:
 
 You should aim to provide only one recipe to the user, using the standard UK metric units with the recipe structured with clear steps that are in order with one action per step. The estimated times should be realistic.
 
+For every item in extra_needed, also give:
+- estimated_price: a rough UK supermarket price in GBP for the smallest pack a student could buy (not the amount used). Use a number like 1.10, never text.
+- aisle: exactly one of: fruit & veg, bakery, meat & fish, dairy & eggs, cupboard, spices & sauces, frozen, other.
+Never put household staples (salt, pepper, oil, water) in extra_needed.
+
 GOOD EXAMPLE 1:
 user has no "diet" value, has a hob and microwave, and wants 2 servings in 20 minutes or less
 {
@@ -39,7 +44,7 @@ user has no "diet" value, has a hob and microwave, and wants 2 servings in 20 mi
     { "name": "green pesto", "amount": "1 tbsp" },
     { "name": "natural yogurt", "amount": "3 tbsp" }
   ],
-  "extra_needed": [{ "name": "soy sauce", "amount": "1 tbsp" }],
+  "extra_needed": [{ "name": "soy sauce", "amount": "1 tbsp", "estimated_price": 1.10, "aisle": "spices & sauces" }],
   "steps": [
     {
       "number": 1,
