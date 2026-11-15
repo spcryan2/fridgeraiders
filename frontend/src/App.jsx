@@ -98,7 +98,7 @@ function App() {
             user={user}
             onScanned={handleScanned}
             onOpenBoard={handleOpenBoard}
-            onOpenList={()=> setScreen("my list")}
+            onOpenList={() => setScreen("mylist")}
             onLogIn={() => setScreen("auth")}
             onLogOut={handleLogOut}
           />

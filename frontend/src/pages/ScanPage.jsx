@@ -95,6 +95,13 @@ function ScanPage({ user, onScanned, onOpenBoard, onOpenList, onLogIn, onLogOut 
         Most wanted recipes
       </button>
 
+      <button
+        onClick={onOpenList}
+        className="mx-auto block rounded-full px-5 py-2.5 font-semibold text-lime-bright ring-2 ring-forest-soft transition hover:ring-lime-bright/60 active:scale-95"
+      >
+        🛒 My shopping list
+      </button>
+
       <BadgeShelf user={user} />
     </div>
   );

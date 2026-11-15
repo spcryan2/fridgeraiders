@@ -2,11 +2,6 @@ import SectionHeading from "./SectionHeading.jsx";
 import FlavourMix from "./FlavourMix.jsx";
 import ShoppingList from "./ShoppingList.jsx";
 
-function formatExtra(item) {
-  if (typeof item === "string") return item;
-  return item.amount ? `${item.name} (${item.amount})` : item.name;
-}
-
 function RecipeCard({ recipe }) {
   return (
     <article className="overflow-hidden rounded-[2rem] bg-white ring-1 ring-forest/10 motion-safe:animate-rise">
@@ -85,19 +80,12 @@ function RecipeCard({ recipe }) {
         </section>
 
         {recipe.extra_needed.length > 0 && (
-          <section className="space-y-3">
-            <SectionHeading>Grab these too</SectionHeading>
-            <ul className="flex flex-wrap gap-2">
-              {recipe.extra_needed.map((item, i) => (
-                <li
-                  key={i}
-                  className="rounded-full border-2 border-dashed border-forest/20 px-3 py-1 text-sm"
-                >
-                  + {formatExtra(item)}
-                </li>
-              ))}
-            </ul>
-          </section>
+          <ShoppingList
+            key={recipe.title}
+            items={recipe.extra_needed}
+            title={recipe.title}
+            have={recipe.ingredients_used}
+          />
         )}
 
         <section className="space-y-4">
